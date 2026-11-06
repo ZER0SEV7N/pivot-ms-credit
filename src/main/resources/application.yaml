@@ -1,3 +1,18 @@
 spring:
   application:
     name: ms-credit
+  config:
+    import:
+      - "optional:file:.env[.properties]"
+      - "optional:file:ms-credit/.env[.properties]"
+      - "optional:configserver:http://localhost:8888"
+      - "optional:vault://"
+  cloud:
+    vault:
+      uri: ${VAULT_URI}
+      authentication: TOKEN
+      token: ${VAULT_TOKEN}
+      kv:
+        enabled: true
+        backend: secret
+        default-context: pivot-bank
