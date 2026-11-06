@@ -1,0 +1,471 @@
+openapi: 3.0.3
+info:
+  title: Pivot Banking System - Credit Microservice API
+  description: |
+    RESTful Reactive API for managing Active Bank Products:
+    - Personal Loans (`PERSONAL_LOAN`) - Max 1 active per personal customer.
+    - Business Loans (`BUSINESS_LOAN`) - Multiple allowed per business customer.
+    - Personal Credit Cards (`PERSONAL_CREDIT_CARD`).
+    - Business Credit Cards (`BUSINESS_CREDIT_CARD`).
+    Features AES-256-GCM encryption at rest via HashiCorp Vault, SHA-256 blind indexing, data masking on queries, and logical Soft Delete.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8083/api/v1
+    description: Local Development Server (ms-credit)
+
+tags:
+  - name: Credits
+    description: Operations for managing loans, credit cards, payments, consumptions, and lifecycle states
+
+paths:
+  /credits:
+    post:
+      tags:
+        - Credits
+      summary: Grant a new loan or issue a credit card
+      description: |
+        Creates an active credit product after verifying customer eligibility in ms-customer.
+        Returns the full generated `creditNumber` once upon creation.
+      operationId: createCredit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreditRequest'
+      responses:
+        '201':
+          description: Credit product created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditResponse'
+        '400':
+          description: Business rule violation (e.g., Personal customer requesting a 2nd active loan or a Business loan)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Customer not found in ms-customer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Duplicate credit number
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    get:
+      tags:
+        - Credits
+      summary: Retrieve all credit products (masked credit numbers)
+      operationId: getAllCredits
+      responses:
+        '200':
+          description: Stream of all credit products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CreditResponse'
+
+  /credits/{id}:
+    get:
+      tags:
+        - Credits
+      summary: Get credit product by ID (masked credit number)
+      operationId: getCreditById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Credit product found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditResponse'
+        '404':
+          description: Credit product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      tags:
+        - Credits
+      summary: Update an existing credit product
+      operationId: updateCredit
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreditRequest'
+      responses:
+        '200':
+          description: Credit product updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditResponse'
+        '400':
+          description: Validation or business rule error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Credit product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags:
+        - Credits
+      summary: Soft delete (logically close) a credit product by ID
+      description: |
+        Transitions the credit status to CLOSED if and only if its outstanding debt (`usedAmount`) is 0.00.
+        CLOSED is a terminal state and cannot be reopened.
+      operationId: deleteCredit
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Credit product logically closed (status set to CLOSED)
+        '400':
+          description: Credit still has outstanding debt (usedAmount > 0) or is already CLOSED
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Credit product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /credits/{id}/reactivate:
+    patch:
+      tags:
+        - Credits
+      summary: Unblock a BLOCKED credit product back to ACTIVE
+      description: Restores a temporarily BLOCKED credit or credit card to ACTIVE status. CLOSED credits cannot be reopened.
+      operationId: reactivateCredit
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Credit product unblocked to ACTIVE successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditResponse'
+        '400':
+          description: Credit is CLOSED (terminal) or already ACTIVE
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Credit product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /credits/number/{creditNumber}:
+    get:
+      tags:
+        - Credits
+      summary: Get credit product by Credit/Card Number (via SHA-256 blind index)
+      operationId: getCreditByNumber
+      parameters:
+        - name: creditNumber
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Credit product found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditResponse'
+        '404':
+          description: Credit product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /credits/customer/{customerId}:
+    get:
+      tags:
+        - Credits
+      summary: Get all credit products belonging to a Customer
+      operationId: getCreditsByCustomerId
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of customer credit products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CreditResponse'
+
+  /credits/{id}/balance:
+    get:
+      tags:
+        - Credits
+      summary: Consult available credit line and outstanding debt
+      operationId: getCreditBalance
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Credit balance summary retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditBalanceResponse'
+        '404':
+          description: Credit product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    patch:
+      tags:
+        - Credits
+      summary: Process a credit PAYMENT or credit card CONSUMPTION (Used by ms-transaction)
+      description: |
+        - `PAYMENT`: Reduces `usedAmount` (outstanding debt) and increases `availableAmount` (for credit cards). If a loan reaches `usedAmount == 0`, transitions to `PAID_OFF`.
+        - `CONSUMPTION`: Allowed only for credit cards (`PERSONAL_CREDIT_CARD`, `BUSINESS_CREDIT_CARD`). Increases `usedAmount` and decreases `availableAmount`.
+      operationId: updateCreditBalance
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreditBalanceUpdateRequest'
+      responses:
+        '200':
+          description: Credit balance updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditResponse'
+        '400':
+          description: Exceeds available credit limit, payment exceeds debt, or consumption attempted on a loan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Credit product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    CreditType:
+      type: string
+      enum:
+        - PERSONAL_LOAN
+        - BUSINESS_LOAN
+        - PERSONAL_CREDIT_CARD
+        - BUSINESS_CREDIT_CARD
+
+    CreditStatus:
+      type: string
+      description: Lifecycle status of the credit product (CLOSED represents terminal Soft Delete)
+      enum:
+        - ACTIVE
+        - PAID_OFF
+        - BLOCKED
+        - CLOSED
+      default: ACTIVE
+
+    CreditOperationType:
+      type: string
+      enum:
+        - PAYMENT
+        - CONSUMPTION
+
+    CreditRequest:
+      type: object
+      required:
+        - customerId
+        - creditType
+        - currency
+        - creditLimit
+      properties:
+        creditNumber:
+          type: string
+          description: Optional on creation (auto-generated loan contract or 16-digit card number if omitted)
+          example: "4557-8800-1234-5678"
+        customerId:
+          type: string
+          description: Customer ID from ms-customer
+          example: "6aed46585fc3615ca5ee19a3"
+        creditType:
+          $ref: '#/components/schemas/CreditType'
+        currency:
+          type: string
+          enum: [PEN, USD]
+          default: PEN
+        creditLimit:
+          type: number
+          format: double
+          minimum: 1.00
+          description: Approved loan principal or credit card limit
+          example: 5000.00
+        interestRate:
+          type: number
+          format: double
+          minimum: 0.0
+          description: Annual interest rate percentage (TEA)
+          example: 18.50
+        paymentDueDay:
+          type: integer
+          minimum: 1
+          maximum: 31
+          description: Monthly billing/payment due day
+          example: 20
+        status:
+          $ref: '#/components/schemas/CreditStatus'
+
+    CreditResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        creditNumber:
+          type: string
+          description: Unmasked on POST creation; masked (************5678) on all GET/PUT/PATCH responses
+        customerId:
+          type: string
+        creditType:
+          $ref: '#/components/schemas/CreditType'
+        currency:
+          type: string
+        creditLimit:
+          type: number
+        usedAmount:
+          type: number
+          description: Current outstanding debt to be paid
+        availableAmount:
+          type: number
+          description: Remaining available credit for consumptions
+        interestRate:
+          type: number
+        paymentDueDay:
+          type: integer
+        status:
+          $ref: '#/components/schemas/CreditStatus'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreditBalanceResponse:
+      type: object
+      properties:
+        creditId:
+          type: string
+        creditNumber:
+          type: string
+          description: Masked credit or card number
+        creditType:
+          $ref: '#/components/schemas/CreditType'
+        currency:
+          type: string
+        creditLimit:
+          type: number
+        usedAmount:
+          type: number
+        availableAmount:
+          type: number
+        status:
+          $ref: '#/components/schemas/CreditStatus'
+        queriedAt:
+          type: string
+          format: date-time
+
+    CreditBalanceUpdateRequest:
+      type: object
+      required:
+        - operationType
+        - amount
+      properties:
+        operationType:
+          $ref: '#/components/schemas/CreditOperationType'
+        amount:
+          type: number
+          minimum: 0.01
+          example: 350.00
+
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+        error:
+          type: string
+        message:
+          type: string
+        path:
+          type: string
