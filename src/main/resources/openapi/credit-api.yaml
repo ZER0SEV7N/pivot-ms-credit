@@ -167,39 +167,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /credits/{id}/reactivate:
-    patch:
-      tags:
-        - Credits
-      summary: Unblock a BLOCKED credit product back to ACTIVE
-      description: Restores a temporarily BLOCKED credit or credit card to ACTIVE status. CLOSED credits cannot be reopened.
-      operationId: reactivateCredit
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Credit product unblocked to ACTIVE successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CreditResponse'
-        '400':
-          description: Credit is CLOSED (terminal) or already ACTIVE
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: Credit product not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
   /credits/number/{creditNumber}:
     get:
       tags:

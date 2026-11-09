@@ -1,6 +1,8 @@
 package com.pe.pivot.credit.application.usecases;
 
+import com.pe.pivot.credit.domain.exception.BusinessRuleException;
 import com.pe.pivot.credit.domain.model.Credit;
+import com.pe.pivot.credit.domain.model.CreditStatus;
 import com.pe.pivot.credit.domain.port.in.FindCreditByIdUseCase;
 import com.pe.pivot.credit.domain.port.in.UpdateCreditUseCase;
 import com.pe.pivot.credit.domain.port.out.CreditRepositoryPort;
@@ -35,6 +37,11 @@ public class UpdateCreditUseCaseImpl implements UpdateCreditUseCase {
     log.debug("Updating credit product with ID: {}", id);
     return findCreditByIdUseCase.findById(id)
             .flatMap(existing -> {
+              // Validate that the credit product is not in a terminal status (CLOSED or PAID_OFF)
+              if (existing.getStatus() == CreditStatus.CLOSED || existing.getStatus() == CreditStatus.PAID_OFF) {
+                return Single.error(new BusinessRuleException("Cannot modify a credit product in terminal status: " + existing.getStatus()));
+              }
+
               // Update fields of the existing credit with incoming values
               Optional.ofNullable(incoming.getCurrency()).ifPresent(existing::setCurrency);
               Optional.ofNullable(incoming.getInterestRate()).ifPresent(existing::setInterestRate);
