@@ -1,4 +1,4 @@
-package com.pe.pivot.credit.domain.strategy;
+package com.pe.pivot.credit.domain.strategy.validation;
 
 import com.pe.pivot.credit.domain.model.Credit;
 import com.pe.pivot.credit.domain.model.CustomerSummary;

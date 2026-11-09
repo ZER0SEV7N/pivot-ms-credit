@@ -1,8 +1,7 @@
-package com.pe.pivot.credit.domain.strategy;
+package com.pe.pivot.credit.domain.strategy.validation;
 
 import com.pe.pivot.credit.domain.exception.BusinessRuleException;
 import com.pe.pivot.credit.domain.model.Credit;
-import com.pe.pivot.credit.domain.model.CreditStatus;
 import com.pe.pivot.credit.domain.model.CreditType;
 import com.pe.pivot.credit.domain.model.CustomerSummary;
 import io.reactivex.rxjava3.core.Completable;
@@ -37,19 +36,16 @@ public class PersonalCreditStrategy implements CreditValidationStrategy {
   public Completable validate(CustomerSummary customer, Credit newCredit, List<Credit> existingCredits) {
 
     return Completable.fromAction(() -> {
-      if(newCredit.getCreditType() == CreditType.BUSINESS_LOAN || newCredit.getCreditType() ==CreditType.BUSINESS_CREDIT_CARD) {
-        throw new IllegalArgumentException("Personal customers cannot request BUSINESS_LOAN or BUSINESS_CREDIT_CARD products.");
+      // Business Rule: Personal customers cannot request BUSINESS_LOAN or BUSINESS_CREDIT_CARD products.
+      if (newCredit.getCreditType().isBusinessProduct()) {
+        throw new BusinessRuleException("Personal customers cannot request BUSINESS_LOAN or BUSINESS_CREDIT_CARD products.");
       }
 
-      if(newCredit.getCreditType() ==  CreditType.PERSONAL_LOAN) {
-        boolean hasActivePersonalLoan = existingCredits.stream()
-                .anyMatch(credit -> credit.getCreditType() == CreditType.PERSONAL_LOAN
-                  && credit.getStatus() != CreditStatus.CLOSED
-                  && credit.getStatus() != CreditStatus.PAID_OFF);
-        if (hasActivePersonalLoan) {
-          throw new BusinessRuleException("Personal customers are only allowed to hold one active PERSONAL_LOAN at a time.");
-        }
+      // Business Rule: Personal customers can only have one active PERSONAL_LOAN at a time.
+      if (newCredit.getCreditType() == CreditType.PERSONAL_LOAN && existingCredits.stream().anyMatch(Credit::isActivePersonalLoan)) {
+        throw new BusinessRuleException("Personal customers are only allowed to hold one active PERSONAL_LOAN at a time.");
       }
     });
   }
 }
+

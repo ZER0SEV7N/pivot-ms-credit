@@ -1,5 +1,6 @@
 package com.pe.pivot.credit.infrastructure.config;
 
+import com.pe.pivot.credit.domain.model.CreditType;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -20,4 +21,15 @@ public class CreditRulesProperties {
   private BigDecimal defaultBusinessLoanRate;
   private BigDecimal defaultCreditCardRate;
   private Integer defaultPaymentDueDay;
+
+  // Business Logic Methods
+  public BigDecimal resolveDefaultRate(CreditType type) {
+    if (type == CreditType.PERSONAL_LOAN) {
+      return defaultPersonalLoanRate;
+    }
+    if (type == CreditType.BUSINESS_LOAN) {
+      return defaultBusinessLoanRate;
+    }
+    return defaultCreditCardRate;
+  }
 }

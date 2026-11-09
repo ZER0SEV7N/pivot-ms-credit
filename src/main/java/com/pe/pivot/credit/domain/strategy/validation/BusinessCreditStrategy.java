@@ -1,4 +1,4 @@
-package com.pe.pivot.credit.domain.strategy;
+package com.pe.pivot.credit.domain.strategy.validation;
 
 import com.pe.pivot.credit.domain.exception.BusinessRuleException;
 import com.pe.pivot.credit.domain.model.Credit;
@@ -35,7 +35,8 @@ public class BusinessCreditStrategy implements CreditValidationStrategy {
   @Override
   public Completable validate(CustomerSummary customer, Credit newCredit, List<Credit> existingCredits) {
     return Completable.fromAction(() -> {
-      if (newCredit.getCreditType() == CreditType.PERSONAL_LOAN || newCredit.getCreditType() == CreditType.PERSONAL_CREDIT_CARD) {
+      // Business customers cannot request PERSONAL_LOAN or PERSONAL_CREDIT_CARD products.
+      if (newCredit.getCreditType().isPersonalProduct()) {
         throw new BusinessRuleException("Business customers cannot request PERSONAL_LOAN or PERSONAL_CREDIT_CARD products.");
       }
     });

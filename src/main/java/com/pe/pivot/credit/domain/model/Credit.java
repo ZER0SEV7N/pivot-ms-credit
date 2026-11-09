@@ -35,7 +35,16 @@ public class Credit {
   private Instant createdAt;
   private Instant updatedAt;
 
+  // Business Logic Methods
+  // Only can be closed when the used amount is zero or null (no debt)
   public boolean canBeClosed() {
     return this.usedAmount == null || this.usedAmount.compareTo(BigDecimal.ZERO) == 0;
+  }
+
+  // A Personal Loan is considered active if it is not closed or paid off
+  public boolean isActivePersonalLoan() {
+    return this.creditType == CreditType.PERSONAL_LOAN
+            && this.status != CreditStatus.CLOSED
+            && this.status != CreditStatus.PAID_OFF;
   }
 }
