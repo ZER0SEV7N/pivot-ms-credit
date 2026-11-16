@@ -1,10 +1,10 @@
 package com.pe.pivot.credit.application.usecases;
 
+import com.pe.pivot.credit.application.support.CreditDomainInitializer;
 import com.pe.pivot.credit.domain.exception.BusinessRuleException;
 import com.pe.pivot.credit.domain.exception.CustomerNotFoundException;
+import com.pe.pivot.credit.domain.exception.DuplicateCreditException;
 import com.pe.pivot.credit.domain.model.Credit;
-import com.pe.pivot.credit.domain.model.CreditStatus;
-import com.pe.pivot.credit.domain.model.CreditType;
 import com.pe.pivot.credit.domain.model.CustomerSummary;
 import com.pe.pivot.credit.domain.port.in.CreateCreditUseCase;
 import com.pe.pivot.credit.domain.port.out.CreditRepositoryPort;
@@ -19,11 +19,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 /**
  * Single Responsibility Use Case for granting loans and issuing credit cards.
@@ -37,103 +33,77 @@ public class CreateCreditUseCaseImpl implements CreateCreditUseCase {
   private final CustomerClientPort customerClient;
   private final List<CreditValidationStrategy> validationStrategies;
   private final CreditRulesProperties rulesProperties;
+  private final CreditDomainInitializer creditInitializer;
   private final CryptoUtil cryptoUtil;
 
+  /**
+   * Creates a new credit product for a customer, ensuring that the customer is active and
+   * that the credit product adheres to business rules and validation strategies.
+   *
+   * @param credit - the Credit object containing the details of the credit product to be created
+   * @return - a Single emitting the created Credit object upon successful creation, or an error if the operation fails
+   */
   @Override
   public Single<Credit> create(Credit credit) {
-    log.debug("Initiating credit product creation for customerId: {} and type: {}", credit.getCustomerId(), credit.getCreditType());
+    log.debug("Initiating credit creation for customerId: {} and type: {}", credit.getCustomerId(), credit.getCreditType());
 
-    return customerClient.findCustomerById(credit.getCustomerId())
-            .switchIfEmpty(Single.error(new CustomerNotFoundException("Customer not found in ms-customer with ID: " + credit.getCustomerId())))
-            .flatMap(customer -> {
-              if(!customer.isActive()) {
-                return Single.error(new BusinessRuleException("Cannot grant credit to an inactive or blocked customer."));
-              }
-
-              return creditRepository.findByCustomerId(customer.getId())
-                      .toList()
-                      .flatMap(existingCredits -> applyStrategy(customer, credit, existingCredits)
-                              .andThen(Single.defer(() -> {
-                                configureProductsDefaults(credit);
-                                return verifyUniquenessAndSave(credit);
-                              })));
-            })
+    // Validate that the customer exists and is active, then validate the credit product against business rules
+    return fetchActiveCustomer(credit.getCustomerId())
+            .flatMap(customer -> creditRepository.findByCustomerId(customer.getId())
+                    .toList()
+                    // Validate the new credit product against existing credits and business rules
+                    .flatMap(existingCredits -> validateWithStrategy(customer, credit, existingCredits)
+                            .andThen(Single.defer(() -> {
+                              creditInitializer.initializeDefaults(credit);
+                              return saveUniqueCredit(credit);
+                            }))))
             .doOnSuccess(saved -> log.info("Credit product created successfully. ID: {}, MaskedNumber: {}",
                     saved.getId(), DataMaskingUtil.maskCreditNumber(saved.getCreditNumber())));
   }
 
   /**
-   * Applies the appropriate validation strategy based on the customer type.
+   * Fetches the customer summary for the given customer ID and ensures that the customer is active.
    *
-   * @param customer - The summary of the customer requesting credit.
+   * @param customerId - The unique identifier of the customer to fetch.
+   * @return - A Single emitting the CustomerSummary if the customer is found and active, or an error if not.
+   */
+  private Single<CustomerSummary> fetchActiveCustomer(String customerId) {
+    // Validate that the customer exists and is active before proceeding with credit creation
+    return customerClient.findCustomerById(customerId)
+            .switchIfEmpty(Single.error(new CustomerNotFoundException("Customer not found in ms-customer with ID: " + customerId)))
+            .flatMap(customer -> customer.isActive()
+                    ? Single.just(customer)
+                    : Single.error(new BusinessRuleException("Cannot grant credit products to an inactive or blocked customer.")));
+  }
+
+  /**
+   * Validates the new credit product against existing credits
+   * and business rules using the appropriate validation strategy.
+   *
+   * @param customer - The customer summary for whom the credit product is being created.
    * @param newCredit - The new credit product being requested.
    * @param existingCredits - The list of existing credit products the customer has.
    * @return - A Completable that completes if the validation passes, or emits an error if it fails.
    */
-  private Completable applyStrategy(CustomerSummary customer, Credit newCredit, List<Credit> existingCredits) {
+  private Completable validateWithStrategy(CustomerSummary customer, Credit newCredit, List<Credit> existingCredits) {
+    // Use the appropriate validation strategy based on the customer type to validate the new credit product
     return validationStrategies.stream()
             .filter(strategy -> strategy.supports(customer.getCustomerType()))
             .findFirst()
             .map(strategy -> strategy.validate(customer, newCredit, existingCredits))
-            .orElse(Completable.error(new BusinessRuleException("Unsupported customer type: " + customer.getCustomerType())));
+            .orElseGet(() -> Completable.error(new BusinessRuleException("Unsupported customer type: " + customer.getCustomerType())));
   }
 
   /**
-   * Configures default values for the credit product based on its type and business rules.
+   * Saves the new credit product to the repository, ensuring that the credit number is unique.
    *
-   * @param credit - The credit product to configure.
-   * @return - The configured credit product.
+   * @param credit - The credit product to be saved.
+   * @return - A Single emitting the saved Credit product, or an error if a duplicate credit number exists.
    */
-  private Single<Credit> verifyUniquenessAndSave(Credit credit) {
+  private Single<Credit> saveUniqueCredit(Credit credit) {
     return creditRepository.existsByCreditNumberHash(credit.getCreditNumberHash())
-            .flatMap(exists -> {
-              if (exists) {
-                return Single.error(new BusinessRuleException("A credit product with the specified number already exists."));
-              }
-              return creditRepository.save(credit);
-            });
-  }
-
-  /**
-   * Configures default values for the credit product based on its type and business rules.
-   *
-   * @param credit - The credit product to configure.
-   */
-  private void configureProductsDefaults(Credit credit) {
-    // Set default values for credit number, currency, status, and payment due day if they are not provided
-    String prefix = credit.getCreditType().isCreditCard() ? "4557-8800-" : "LN-";
-    String rawCreditNumber = Optional.ofNullable(credit.getCreditNumber())
-            .filter(num -> !num.isBlank())
-            .orElseGet(() -> prefix + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
-
-    // Set the credit number and its hash
-    credit.setCreditNumber(rawCreditNumber);
-    credit.setCreditNumberHash(cryptoUtil.hashSha256(rawCreditNumber));
-    credit.setCurrency(Optional.ofNullable(credit.getCurrency()).orElse("PEN"));
-    credit.setStatus(Optional.ofNullable(credit.getStatus()).orElse(CreditStatus.ACTIVE));
-    credit.setPaymentDueDay(Optional.ofNullable(credit.getPaymentDueDay()).orElse(rulesProperties.getDefaultPaymentDueDay()));
-
-    if(credit.getCreditType().isLoan()){
-      // In a Loan, the full principal is immediately disbursed (usedAmount = creditLimit, available = 0)
-      credit.setUsedAmount(credit.getCreditLimit());
-      credit.setAvailableAmount(BigDecimal.ZERO);
-
-      // Set default interest rate based on credit type if not provided
-      BigDecimal defaultRate = credit.getCreditType() == CreditType.PERSONAL_LOAN
-              ? rulesProperties.getDefaultPersonalLoanRate()
-              : rulesProperties.getDefaultBusinessLoanRate();
-      credit.setInterestRate(Optional.ofNullable(credit.getInterestRate()).orElse(defaultRate));
-    } else {
-      // In a Credit Card, the line starts with 0 debt and full available limit
-      credit.setUsedAmount(BigDecimal.ZERO);
-      credit.setAvailableAmount(credit.getCreditLimit());
-      credit.setInterestRate(Optional.ofNullable(credit.getInterestRate()).orElse(rulesProperties.getDefaultCreditCardRate()));
-    }
-
-    // Set timestamps for creation and last update
-    Instant now = Instant.now();
-    credit.setCreatedAt(now);
-    credit.setUpdatedAt(now);
+            .flatMap(exists -> Boolean.TRUE.equals(exists)
+                    ? Single.error(new DuplicateCreditException("A credit product with the specified number already exists."))
+                    : creditRepository.save(credit));
   }
 }
-
