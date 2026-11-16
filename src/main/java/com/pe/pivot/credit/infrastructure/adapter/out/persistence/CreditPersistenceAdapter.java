@@ -24,7 +24,8 @@ public class CreditPersistenceAdapter implements CreditRepositoryPort {
 
   /**
    * Saves a Credit entity to the database.
-   * The Credit object is first mapped to its corresponding persistence document, saved, and then mapped back to the domain model.
+   * The Credit object is first mapped to its corresponding persistence document, saved, and
+   * then mapped back to the domain model.
    *
    * @param credit - the Credit entity to be saved
    * @return - a Single emitting the saved Credit entity
@@ -65,7 +66,8 @@ public class CreditPersistenceAdapter implements CreditRepositoryPort {
   }
 
   /**
-   * Finds a Credit entity by its hashed credit number. If the entity is not found, an empty Maybe is returned.
+   * Finds a Credit entity by its hashed credit number. If the entity is not found, an empty
+   * Maybe is returned.
    *
    * @param creditNumberHash - the SHA-256 hash of the credit number to search for
    * @return - a Maybe emitting the found Credit entity or empty if not found
@@ -79,9 +81,11 @@ public class CreditPersistenceAdapter implements CreditRepositoryPort {
   }
 
   /**
-   * Finds all Credit entities associated with a specific customer ID. Returns a Flowable stream of Credit entities.
+   * Finds all Credit entities associated with a specific customer ID. Returns a Flowable stream
+   * of Credit entities.
    *
-   * @param customerId - the unique identifier of the customer whose Credit entities are to be retrieved
+   * @param customerId - the unique identifier of the customer whose Credit entities are to be
+   *     retrieved
    * @return - a Flowable emitting all Credit entities associated with the given customer ID
    */
   @Override
@@ -93,10 +97,12 @@ public class CreditPersistenceAdapter implements CreditRepositoryPort {
   }
 
   /**
-   * Checks if a Credit entity exists with the given hashed credit number. Returns a Single emitting true if it exists, false otherwise.
+   * Checks if a Credit entity exists with the given hashed credit number. Returns a Single
+   * emitting true if it exists, false otherwise.
    *
    * @param creditNumberHash - the SHA-256 hash of the credit number to check for existence
-   * @return - a Single emitting true if a Credit entity with the given hash exists, false otherwise
+   * @return - a Single emitting true if a Credit entity with the given hash exists, false
+   *     otherwise
    */
   @Override
   public Single<Boolean> existsByCreditNumberHash(String creditNumberHash) {

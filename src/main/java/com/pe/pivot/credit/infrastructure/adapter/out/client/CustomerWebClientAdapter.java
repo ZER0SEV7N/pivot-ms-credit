@@ -23,7 +23,7 @@ public class CustomerWebClientAdapter implements CustomerClientPort {
   private final WebClient customerWebClient;
 
   @Override
-  public Maybe<CustomerSummary> findCustomerById(String customerId){
+  public Maybe<CustomerSummary> findCustomerById(String customerId) {
     log.debug("Calling ms-customer GET /{} for customerId: {}", customerId, customerId);
 
     // Use WebClient to make a non-blocking GET request to ms-customer
@@ -34,7 +34,8 @@ public class CustomerWebClientAdapter implements CustomerClientPort {
             .bodyToMono(CustomerClientResponse.class)
             .map(this::toDomain)
             .onErrorResume(ex -> {
-              log.warn("Customer lookup returned empty or error for ID {}: {}", customerId, ex.getMessage());
+              log.warn("Customer lookup returned empty or error for ID {}: {}",
+                      customerId, ex.getMessage());
               return Mono.empty();
             });
 

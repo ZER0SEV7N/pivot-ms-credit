@@ -55,7 +55,8 @@ public class CreditPersistenceMapper {
             .creditNumber(cryptoUtil.decryptAes256(doc.getCreditNumber()))
             .creditNumberHash(doc.getCreditNumberHash())
             .customerId(doc.getCustomerId())
-            .creditType(doc.getCreditType() != null ? CreditType.valueOf(doc.getCreditType()) : null)
+            .creditType(
+                    doc.getCreditType() != null ? CreditType.valueOf(doc.getCreditType()) : null)
             .currency(doc.getCurrency())
             .creditLimit(doc.getCreditLimit())
             .usedAmount(doc.getUsedAmount())

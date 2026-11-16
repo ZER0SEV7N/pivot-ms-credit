@@ -5,7 +5,6 @@ import com.pe.pivot.credit.domain.model.Credit;
 import com.pe.pivot.credit.domain.model.CreditType;
 import com.pe.pivot.credit.domain.model.CustomerSummary;
 import io.reactivex.rxjava3.core.Completable;
-
 import java.util.List;
 
 /**
@@ -30,22 +29,29 @@ public class PersonalCreditStrategy implements CreditValidationStrategy {
    * @param customer - The summary of the customer requesting credit.
    * @param newCredit - The new credit product being requested.
    * @param existingCredits - The list of existing credit products the customer has.
-   * @return - A Completable that completes if the validation passes, or emits an error if it fails.
+   * @return - A Completable that completes if the validation passes, or emits an error if it
+   *     fails.
    */
   @Override
-  public Completable validate(CustomerSummary customer, Credit newCredit, List<Credit> existingCredits) {
+  public Completable validate(
+          CustomerSummary customer, Credit newCredit, List<Credit> existingCredits) {
 
     return Completable.fromAction(() -> {
-      // Business Rule: Personal customers cannot request BUSINESS_LOAN or BUSINESS_CREDIT_CARD products.
+      // Business Rule: Personal customers cannot request BUSINESS_LOAN or BUSINESS_CREDIT_CARD
+      // products.
       if (newCredit.getCreditType().isBusinessProduct()) {
-        throw new BusinessRuleException("Personal customers cannot request BUSINESS_LOAN or BUSINESS_CREDIT_CARD products.");
+        throw new BusinessRuleException(
+                "Personal customers cannot request BUSINESS_LOAN or BUSINESS_CREDIT_CARD "
+                        + "products.");
       }
 
       // Business Rule: Personal customers can only have one active PERSONAL_LOAN at a time.
-      if (newCredit.getCreditType() == CreditType.PERSONAL_LOAN && existingCredits.stream().anyMatch(Credit::isActivePersonalLoan)) {
-        throw new BusinessRuleException("Personal customers are only allowed to hold one active PERSONAL_LOAN at a time.");
+      if (newCredit.getCreditType() == CreditType.PERSONAL_LOAN
+              && existingCredits.stream().anyMatch(Credit::isActivePersonalLoan)) {
+        throw new BusinessRuleException(
+                "Personal customers are only allowed to hold one active PERSONAL_LOAN at a "
+                        + "time.");
       }
     });
   }
 }
-

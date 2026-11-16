@@ -1,11 +1,5 @@
 package com.pe.pivot.credit.infrastructure.util;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
-import javax.crypto.Cipher;
-import javax.crypto.spec.GCMParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -13,6 +7,11 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HexFormat;
+import javax.crypto.Cipher;
+import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 /**
  * Cryptographic component responsible for SHA-256 blind indexing and AES-256-GCM encryption
@@ -39,18 +38,25 @@ public final class CryptoUtil {
    */
   public CryptoUtil(@Value("${aes-secret-key}") String aesSecretKey) {
     if (aesSecretKey == null || aesSecretKey.isBlank()) {
-      throw new IllegalStateException("The AES secret key is missing. Configure aes-secret-key in HashiCorp Vault.");
+      throw new IllegalStateException(
+              "The AES secret key is missing. Configure aes-secret-key in HashiCorp Vault.");
     }
     this.secretKeySpec = buildAes256Key(aesSecretKey);
   }
 
+  /**
+   * Computes the SHA-256 hash of the given input and returns its hexadecimal representation.
+   *
+   * @param input - the plain text to hash
+   * @return - the hexadecimal SHA-256 hash, or null when the input is null
+   */
   public String hashSha256(String input) {
     // Hashes the input using SHA-256 and returns the hex representation
-    if(input == null) {
+    if (input == null) {
       return null;
     }
 
-    try{
+    try {
       // Create a SHA-256 MessageDigest instance
       MessageDigest digest = MessageDigest.getInstance(SHA_256_ALGORITHM);
       byte[] encodedHash = digest.digest(input.trim().getBytes(StandardCharsets.UTF_8));
@@ -69,18 +75,19 @@ public final class CryptoUtil {
    */
   public String encryptAes256(String plainText) {
     // Encrypts the input using AES-256-GCM and returns the Base64 representation
-    if(plainText == null ) {
+    if (plainText == null) {
       return null;
     }
 
     // Encrypt the input using AES-256-GCM and return the Base64 representation
-    try{
+    try {
       byte[] iv = new byte[GCM_IV_LENGTH];
       SECURE_RANDOM.nextBytes(iv);
 
       // Create a Cipher instance for AES-256-GCM encryption
       Cipher cipher = Cipher.getInstance(AES_TRANSFORMATION);
-      cipher.init(Cipher.ENCRYPT_MODE, this.secretKeySpec, new GCMParameterSpec(GCM_TAG_LENGTH, iv));
+      cipher.init(Cipher.ENCRYPT_MODE, this.secretKeySpec,
+              new GCMParameterSpec(GCM_TAG_LENGTH, iv));
 
       // Encrypt the plain text and concatenate the IV with the encrypted bytes
       byte[] encryptedBytes = cipher.doFinal(plainText.getBytes(StandardCharsets.UTF_8));
@@ -98,7 +105,8 @@ public final class CryptoUtil {
   }
 
   /**
-   * Decrypts the given Base64-encoded AES-256-GCM encrypted string and returns the original plain text.
+   * Decrypts the given Base64-encoded AES-256-GCM encrypted string and returns the original
+   * plain text.
    *
    * @param cipherText - the Base64-encoded AES-256-GCM encrypted string
    * @return - the original plain text
@@ -110,7 +118,7 @@ public final class CryptoUtil {
       return null;
     }
 
-    try{
+    try {
       // Decode the Base64-encoded cipher text to get the payload
       byte[] payload = Base64.getDecoder().decode(cipherText);
       if (payload.length <= GCM_IV_LENGTH) {
@@ -123,7 +131,8 @@ public final class CryptoUtil {
 
       // Create a Cipher instance for AES-256-GCM decryption
       Cipher cipher = Cipher.getInstance(AES_TRANSFORMATION);
-      cipher.init(Cipher.DECRYPT_MODE, this.secretKeySpec, new GCMParameterSpec(GCM_TAG_LENGTH, iv));
+      cipher.init(Cipher.DECRYPT_MODE, this.secretKeySpec,
+              new GCMParameterSpec(GCM_TAG_LENGTH, iv));
 
       // Decrypt the encrypted bytes and return the original plain text
       byte[] decryptedBytes = cipher.doFinal(encryptedBytes);
@@ -141,7 +150,7 @@ public final class CryptoUtil {
    * @throws IllegalStateException if the key cannot be generated
    */
   private SecretKeySpec buildAes256Key(String rawKey) {
-    try{
+    try {
       MessageDigest sha = MessageDigest.getInstance(SHA_256_ALGORITHM);
       byte[] keyBytes = sha.digest(rawKey.getBytes(StandardCharsets.UTF_8));
       keyBytes = Arrays.copyOf(keyBytes, 32); // Ensure the key is 32 bytes for AES-256

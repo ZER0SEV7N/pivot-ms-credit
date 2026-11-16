@@ -7,17 +7,18 @@ import com.pe.pivot.credit.domain.model.CreditStatus;
 import com.pe.pivot.credit.domain.port.in.FindCreditByIdUseCase;
 import com.pe.pivot.credit.domain.port.in.UpdateCreditBalanceUseCase;
 import com.pe.pivot.credit.domain.port.out.CreditRepositoryPort;
-import com.pe.pivot.credit.domain.strategy.operation.ConsumptionOperationStrategy;
 import com.pe.pivot.credit.domain.strategy.operation.CreditOperationStrategy;
-import com.pe.pivot.credit.domain.strategy.operation.PaymentOperationStrategy;
 import io.reactivex.rxjava3.core.Single;
+import java.math.BigDecimal;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.util.List;
-
+/**
+ * Single Responsibility Use Case for applying PAYMENT and CONSUMPTION operations to the balance
+ * of a credit product.
+ */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -36,8 +37,10 @@ public class CreditBalanceUseCaseImpl implements UpdateCreditBalanceUseCase {
    * @return - A Single emitting the updated Credit product or an error if the operation fails.
    */
   @Override
-  public Single<Credit> updateBalance(String id, CreditOperationType operationType, BigDecimal amount) {
-    log.debug("Processing credit balance operation for creditId: {}, operation: {}, amount: {}", id, operationType, amount);
+  public Single<Credit> updateBalance(
+          String id, CreditOperationType operationType, BigDecimal amount) {
+    log.debug("Processing credit balance operation for creditId: {}, operation: {}, amount: {}",
+            id, operationType, amount);
 
     // Validate the credit product exists and is in a valid state for the operation
     return findCreditByIdUseCase.findById(id)
@@ -46,7 +49,8 @@ public class CreditBalanceUseCaseImpl implements UpdateCreditBalanceUseCase {
             .flatMap(creditRepository::save)
             .doOnSuccess(updated -> log.info(
                     "Credit balance updated for ID: {}. Used: {}, Available: {}, Status: {}",
-                    updated.getId(), updated.getUsedAmount(), updated.getAvailableAmount(), updated.getStatus()));
+                    updated.getId(), updated.getUsedAmount(), updated.getAvailableAmount(),
+                    updated.getStatus()));
   }
 
   /**
@@ -54,12 +58,14 @@ public class CreditBalanceUseCaseImpl implements UpdateCreditBalanceUseCase {
    *
    * @param credit - The credit product to validate.
    * @param amount - The amount to be used in the operation.
-   * @return - A Single emitting the credit product if valid, or an error if any precondition fails.
+   * @return - A Single emitting the credit product if valid, or an error if any precondition
+   *     fails.
    */
   private Single<Credit> validatePreconditions(Credit credit, BigDecimal amount) {
     // Validate that the credit product is ACTIVE and the amount is positive
     if (credit.getStatus() != CreditStatus.ACTIVE) {
-      return Single.error(new BusinessRuleException("Credit product is not ACTIVE. Current status: " + credit.getStatus()));
+      return Single.error(new BusinessRuleException(
+              "Credit product is not ACTIVE. Current status: " + credit.getStatus()));
     }
 
     // Validate that the amount is positive
@@ -79,6 +85,7 @@ public class CreditBalanceUseCaseImpl implements UpdateCreditBalanceUseCase {
     return operationStrategies.stream()
             .filter(strategy -> strategy.supports(operationType))
             .findFirst()
-            .orElseThrow(() -> new BusinessRuleException("Unsupported credit operation type: " + operationType));
+            .orElseThrow(() -> new BusinessRuleException(
+                    "Unsupported credit operation type: " + operationType));
   }
 }

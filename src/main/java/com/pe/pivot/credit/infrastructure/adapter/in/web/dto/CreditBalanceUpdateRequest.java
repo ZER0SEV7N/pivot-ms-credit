@@ -3,9 +3,8 @@ package com.pe.pivot.credit.infrastructure.adapter.in.web.dto;
 import com.pe.pivot.credit.domain.model.CreditOperationType;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import lombok.Builder;
-
 import java.math.BigDecimal;
+import lombok.Builder;
 
 /**
  * Immutable Request DTO for processing credit payments or credit card consumptions.

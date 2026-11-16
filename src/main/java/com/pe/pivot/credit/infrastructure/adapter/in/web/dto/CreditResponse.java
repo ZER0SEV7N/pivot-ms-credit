@@ -2,10 +2,9 @@ package com.pe.pivot.credit.infrastructure.adapter.in.web.dto;
 
 import com.pe.pivot.credit.domain.model.CreditStatus;
 import com.pe.pivot.credit.domain.model.CreditType;
-import lombok.Builder;
-
 import java.math.BigDecimal;
 import java.time.Instant;
+import lombok.Builder;
 
 /**
  * Immutable Response DTO representing a credit product.

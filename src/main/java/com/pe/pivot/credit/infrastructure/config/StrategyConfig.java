@@ -24,7 +24,9 @@ public class StrategyConfig {
   }
 
   @Bean
-  public CreditValidationStrategy businessCreditStrategy() {return new BusinessCreditStrategy();}
+  public CreditValidationStrategy businessCreditStrategy() {
+    return new BusinessCreditStrategy();
+  }
 
   @Bean
   public CreditOperationStrategy consumptionOperationStrategy() {

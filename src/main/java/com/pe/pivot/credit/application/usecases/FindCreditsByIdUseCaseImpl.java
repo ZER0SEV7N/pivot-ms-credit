@@ -27,10 +27,9 @@ public class FindCreditsByIdUseCaseImpl implements FindCreditByIdUseCase {
    */
   @Override
   public Single<Credit> findById(String id) {
-     log.debug("Searching credit product by ID: {}", id);
-     return creditRepository.findById(id)
-             .switchIfEmpty(Single.error(new CreditNotFoundException("Credit product not found with ID: " + id)));
-   }
-
-
+    log.debug("Searching credit product by ID: {}", id);
+    return creditRepository.findById(id)
+            .switchIfEmpty(Single.error(new CreditNotFoundException(
+                    "Credit product not found with ID: " + id)));
+  }
 }

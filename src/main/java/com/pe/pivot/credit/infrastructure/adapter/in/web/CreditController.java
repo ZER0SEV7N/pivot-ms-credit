@@ -1,8 +1,12 @@
 package com.pe.pivot.credit.infrastructure.adapter.in.web;
 
-import com.pe.pivot.credit.domain.port.in.*;
-import com.pe.pivot.credit.infrastructure.adapter.in.web.dto.CreditBalanceUpdateRequest;
+import com.pe.pivot.credit.domain.port.in.CreateCreditUseCase;
+import com.pe.pivot.credit.domain.port.in.DeleteCreditUseCase;
+import com.pe.pivot.credit.domain.port.in.RetrieveCreditUseCase;
+import com.pe.pivot.credit.domain.port.in.UpdateCreditBalanceUseCase;
+import com.pe.pivot.credit.domain.port.in.UpdateCreditUseCase;
 import com.pe.pivot.credit.infrastructure.adapter.in.web.dto.CreditBalanceResponse;
+import com.pe.pivot.credit.infrastructure.adapter.in.web.dto.CreditBalanceUpdateRequest;
 import com.pe.pivot.credit.infrastructure.adapter.in.web.dto.CreditRequest;
 import com.pe.pivot.credit.infrastructure.adapter.in.web.dto.CreditResponse;
 import com.pe.pivot.credit.infrastructure.adapter.in.web.mapper.CreditWebMapper;
@@ -12,10 +16,20 @@ import io.reactivex.rxjava3.core.Single;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
- * REST Controller implementing the OpenAPI contract for Active Credit Product operations with RxJava 3.
+ * REST Controller implementing the OpenAPI contract for Active Credit Product operations with
+ * RxJava 3.
  */
 @RestController
 @RequestMapping("/api/v1/credits")
@@ -31,6 +45,7 @@ public class CreditController {
 
   /**
    * Grant a new loan or issue a credit card (returns unmasked number once).
+   *
    * @POST /api/v1/credits
    * @param request - CreditRequest DTO containing credit product details.
    * @return - Single emitting CreditResponse with unmasked credit number.
@@ -44,6 +59,7 @@ public class CreditController {
 
   /**
    * Retrieve all credit products (masked numbers).
+   *
    * @GET /api/v1/credits
    * @return - Flowable emitting CreditResponse objects with masked credit numbers.
    */
@@ -55,6 +71,7 @@ public class CreditController {
 
   /**
    * Retrieve a credit product by its ID (masked number).
+   *
    * @GET /api/v1/credits/{id}
    * @param id - the unique identifier of the credit product.
    * @return - Single emitting CreditResponse with masked credit number.
@@ -67,6 +84,7 @@ public class CreditController {
 
   /**
    * Retrieve a credit product by its plain number via SHA-256 hash.
+   *
    * @GET /api/v1/credits/number/{creditNumber}
    * @param creditNumber - the plain credit number to look up.
    * @return - Single emitting CreditResponse with masked credit number.
@@ -79,6 +97,7 @@ public class CreditController {
 
   /**
    * Retrieve all credit products belonging to a customer.
+   *
    * @GET /api/v1/credits/customer/{customerId}
    * @param customerId - the unique identifier of the customer.
    * @return - Flowable emitting CreditResponse objects for the customer's credits.
@@ -91,9 +110,11 @@ public class CreditController {
 
   /**
    * Consult available credit limit and outstanding debt.
+   *
    * @GET /api/v1/credits/{id}/balance
    * @param id - the unique identifier of the credit product.
-   * @return - Single emitting CreditBalanceResponse with masked credit number and balance details.
+   * @return - Single emitting CreditBalanceResponse with masked credit number and balance
+   *     details.
    */
   @GetMapping("/{id}/balance")
   public Single<CreditBalanceResponse> getCreditBalance(@PathVariable String id) {
@@ -103,35 +124,42 @@ public class CreditController {
 
   /**
    * Process a credit PAYMENT or credit card CONSUMPTION.
+   *
    * @PATCH /api/v1/credits/{id}/balance
    * @param id - the unique identifier of the credit product.
    * @param request - CreditBalanceUpdateRequest DTO containing operation type and amount.
    * @return - Single emitting updated CreditResponse with masked credit number.
    */
   @PatchMapping("/{id}/balance")
-  public Single<CreditResponse> updateCreditBalance(@PathVariable String id, @Valid @RequestBody CreditBalanceUpdateRequest request) {
-    return updateCreditBalanceUseCase.updateBalance(id, request.operationType(), request.amount())
+  public Single<CreditResponse> updateCreditBalance(
+          @PathVariable String id, @Valid @RequestBody CreditBalanceUpdateRequest request) {
+    return updateCreditBalanceUseCase
+            .updateBalance(id, request.operationType(), request.amount())
             .map(mapper::toResponse);
   }
 
   /**
    * Update administrative terms of an existing credit product.
+   *
    * @PUT /api/v1/credits/{id}
    * @param id - the unique identifier of the credit product to update.
    * @param request - CreditRequest DTO containing new values for administrative terms.
    * @return - Single emitting updated CreditResponse with masked credit number.
    */
   @PutMapping("/{id}")
-  public Single<CreditResponse> updateCredit(@PathVariable String id, @Valid @RequestBody CreditRequest request) {
+  public Single<CreditResponse> updateCredit(
+          @PathVariable String id, @Valid @RequestBody CreditRequest request) {
     return updateCreditUseCase.updateCredit(id, mapper.toDomain(request))
             .map(mapper::toResponse);
   }
 
   /**
    * Soft delete (close) a credit product when usedAmount == 0.00.
+   *
    * @DELETE /api/v1/credits/{id}
    * @param id - the unique identifier of the credit product to logically close.
-   * @return - Completable that completes when the credit product is successfully logically closed, or emits an error if the operation fails.
+   * @return - Completable that completes when the credit product is successfully logically
+   *     closed, or emits an error if the operation fails.
    */
   @DeleteMapping("/{id}")
   @ResponseStatus(HttpStatus.NO_CONTENT)

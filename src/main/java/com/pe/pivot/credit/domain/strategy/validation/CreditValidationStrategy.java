@@ -3,7 +3,6 @@ package com.pe.pivot.credit.domain.strategy.validation;
 import com.pe.pivot.credit.domain.model.Credit;
 import com.pe.pivot.credit.domain.model.CustomerSummary;
 import io.reactivex.rxjava3.core.Completable;
-
 import java.util.List;
 
 /**

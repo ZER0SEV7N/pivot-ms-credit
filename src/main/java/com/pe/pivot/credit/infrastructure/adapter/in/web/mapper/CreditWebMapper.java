@@ -5,9 +5,8 @@ import com.pe.pivot.credit.infrastructure.adapter.in.web.dto.CreditBalanceRespon
 import com.pe.pivot.credit.infrastructure.adapter.in.web.dto.CreditRequest;
 import com.pe.pivot.credit.infrastructure.adapter.in.web.dto.CreditResponse;
 import com.pe.pivot.credit.infrastructure.util.DataMaskingUtil;
-import org.springframework.stereotype.Component;
-
 import java.time.Instant;
+import org.springframework.stereotype.Component;
 
 /**
  * Web Mapper converting between immutable Record DTOs and Domain Credit.
@@ -16,6 +15,12 @@ import java.time.Instant;
 @Component
 public class CreditWebMapper {
 
+  /**
+   * Maps a CreditRequest DTO to the domain Credit model.
+   *
+   * @param request - the incoming credit request
+   * @return the domain Credit built from the request
+   */
   public Credit toDomain(CreditRequest request) {
     return Credit.builder()
             .creditNumber(request.creditNumber())
@@ -43,6 +48,12 @@ public class CreditWebMapper {
     return buildCreditResponse(domain, DataMaskingUtil.maskCreditNumber(domain.getCreditNumber()));
   }
 
+  /**
+   * Builds a balance response for the given credit, masking its credit number.
+   *
+   * @param domain - the credit whose balance is being consulted
+   * @return the balance response DTO
+   */
   public CreditBalanceResponse toBalanceResponse(Credit domain) {
     return CreditBalanceResponse.builder()
             .creditId(domain.getId())

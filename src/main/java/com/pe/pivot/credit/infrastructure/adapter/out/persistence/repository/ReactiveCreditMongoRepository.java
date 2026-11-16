@@ -10,7 +10,8 @@ import reactor.core.publisher.Mono;
  * Spring Data Reactive MongoDB repository using strictly derived query methods (no @Query).
  */
 @Repository
-public interface ReactiveCreditMongoRepository extends ReactiveMongoRepository<CreditDocument, String> {
+public interface ReactiveCreditMongoRepository
+        extends ReactiveMongoRepository<CreditDocument, String> {
   Mono<CreditDocument> findByCreditNumberHash(String creditNumberHash);
 
   Flux<CreditDocument> findByCustomerId(String customerId);

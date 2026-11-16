@@ -48,7 +48,8 @@ public class RetrieveCreditUseCaseImpl implements RetrieveCreditUseCase {
   }
 
   /**
-   * Find a credit by its credit number. The credit number is hashed for security reasons before querying the repository.
+   * Find a credit by its credit number. The credit number is hashed for security reasons before
+   * querying the repository.
    *
    * @param creditNumber - The credit number to search for.
    * @return - A Single emitting the found Credit, or an error if not found.
@@ -56,9 +57,12 @@ public class RetrieveCreditUseCaseImpl implements RetrieveCreditUseCase {
   @Override
   public Single<Credit> findByCreditNumber(String creditNumber) {
     String hash = cryptoUtil.hashSha256(creditNumber);
-    log.debug("Searching credit product by masked number: {}", DataMaskingUtil.maskCreditNumber(creditNumber));
+    log.debug("Searching credit product by masked number: {}",
+            DataMaskingUtil.maskCreditNumber(creditNumber));
     return creditRepository.findByCreditNumberHash(hash)
-            .switchIfEmpty(Single.error(new CreditNotFoundException("Credit product not found with number: " + DataMaskingUtil.maskCreditNumber(creditNumber))));
+            .switchIfEmpty(Single.error(new CreditNotFoundException(
+                    "Credit product not found with number: "
+                            + DataMaskingUtil.maskCreditNumber(creditNumber))));
   }
 
   /**
