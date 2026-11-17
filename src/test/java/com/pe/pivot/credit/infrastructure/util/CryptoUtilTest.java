@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Unit tests for {@link CryptoUtil}.
  */
-@DisplayName("CryptoUtil hashing and AES encryption")
+@DisplayName("Should hash and encrypt credit data")
 class CryptoUtilTest {
 
   private static final String SECRET_KEY = "unit-test-aes-secret-key";
@@ -24,7 +24,7 @@ class CryptoUtilTest {
   }
 
   @Test
-  @DisplayName("Rejects a null secret key")
+  @DisplayName("Should reject a null secret key")
   void rejectsNullSecretKey() {
     // Act / Assert
     assertThatThrownBy(() -> new CryptoUtil(null))
@@ -33,7 +33,7 @@ class CryptoUtilTest {
   }
 
   @Test
-  @DisplayName("Rejects a blank secret key")
+  @DisplayName("Should reject a blank secret key")
   void rejectsBlankSecretKey() {
     // Act / Assert
     assertThatThrownBy(() -> new CryptoUtil("   "))
@@ -42,7 +42,7 @@ class CryptoUtilTest {
   }
 
   @Test
-  @DisplayName("Returns a null hash for null input")
+  @DisplayName("Should return a null hash for null input")
   void returnsNullHashForNullInput() {
     // Act
     String hash = cryptoUtil.hashSha256(null);
@@ -52,7 +52,7 @@ class CryptoUtilTest {
   }
 
   @Test
-  @DisplayName("Computes a known SHA-256 digest")
+  @DisplayName("Should compute a known SHA-256 digest")
   void computesKnownSha256Digest() {
     // Act
     String hash = cryptoUtil.hashSha256("abc");
@@ -63,7 +63,7 @@ class CryptoUtilTest {
   }
 
   @Test
-  @DisplayName("Trims the input before hashing")
+  @DisplayName("Should trim the input before hashing")
   void trimsInputBeforeHashing() {
     // Act
     String padded = cryptoUtil.hashSha256("  abc  ");
@@ -74,7 +74,7 @@ class CryptoUtilTest {
   }
 
   @Test
-  @DisplayName("Returns null encryption for null input")
+  @DisplayName("Should return null encryption for null input")
   void returnsNullEncryptionForNullInput() {
     // Act
     String encrypted = cryptoUtil.encryptAes256(null);
@@ -84,7 +84,7 @@ class CryptoUtilTest {
   }
 
   @Test
-  @DisplayName("Returns null decryption for null input")
+  @DisplayName("Should return null decryption for null input")
   void returnsNullDecryptionForNullInput() {
     // Act
     String decrypted = cryptoUtil.decryptAes256(null);
@@ -94,7 +94,7 @@ class CryptoUtilTest {
   }
 
   @Test
-  @DisplayName("Encrypts and decrypts a round trip")
+  @DisplayName("Should encrypt and decrypt a round trip")
   void encryptsAndDecryptsRoundTrip() {
     // Arrange
     String plainText = "LN-1234567890";
@@ -109,7 +109,7 @@ class CryptoUtilTest {
   }
 
   @Test
-  @DisplayName("Produces different cipher texts for the same plain text")
+  @DisplayName("Should produce different cipher texts for the same plain text")
   void producesDifferentCipherTextsForSamePlainText() {
     // Arrange
     String plainText = "4557-8800-1234-5678";
@@ -125,7 +125,7 @@ class CryptoUtilTest {
   }
 
   @Test
-  @DisplayName("Rejects cipher text that is not Base64")
+  @DisplayName("Should reject cipher text that is not Base64")
   void rejectsNonBase64CipherText() {
     // Act / Assert
     assertThatThrownBy(() -> cryptoUtil.decryptAes256("not-base64!!"))
@@ -134,7 +134,7 @@ class CryptoUtilTest {
   }
 
   @Test
-  @DisplayName("Rejects a payload shorter than the initialization vector")
+  @DisplayName("Should reject a payload shorter than the initialization vector")
   void rejectsPayloadShorterThanInitializationVector() {
     // Arrange
     String shortPayload = Base64.getEncoder().encodeToString(new byte[5]);
@@ -146,7 +146,7 @@ class CryptoUtilTest {
   }
 
   @Test
-  @DisplayName("Rejects a tampered cipher text")
+  @DisplayName("Should reject a tampered cipher text")
   void rejectsTamperedCipherText() {
     // Arrange
     String encrypted = cryptoUtil.encryptAes256("sensitive-value");

@@ -19,7 +19,7 @@ import reactor.core.publisher.Mono;
 /**
  * Unit tests for {@link CustomerWebClientAdapter}.
  */
-@DisplayName("CustomerWebClientAdapter reactive customer lookup")
+@DisplayName("Should look up customers reactively")
 class CustomerWebClientAdapterTest {
 
   private static final String BASE_URL = "http://localhost:8081/api/v1/customers";
@@ -36,7 +36,7 @@ class CustomerWebClientAdapterTest {
       """;
 
   @Test
-  @DisplayName("Maps a successful response to a customer summary")
+  @DisplayName("Should map a successful response to a customer summary")
   void mapsSuccessfulResponseToCustomerSummary() {
     // Arrange
     AtomicReference<ClientRequest> capturedRequest = new AtomicReference<>();
@@ -62,7 +62,7 @@ class CustomerWebClientAdapterTest {
   }
 
   @Test
-  @DisplayName("Returns empty when the service responds with a 4xx error")
+  @DisplayName("Should return empty when the service responds with a 4xx error")
   void returnsEmptyWhenCustomerServiceRespondsWithClientError() {
     // Arrange
     ExchangeFunction exchangeFunction =
@@ -79,7 +79,7 @@ class CustomerWebClientAdapterTest {
   }
 
   @Test
-  @DisplayName("Returns empty when the service responds with a 5xx error")
+  @DisplayName("Should return empty when the service responds with a 5xx error")
   void returnsEmptyWhenCustomerServiceRespondsWithServerError() {
     // Arrange
     ExchangeFunction exchangeFunction =
@@ -96,7 +96,7 @@ class CustomerWebClientAdapterTest {
   }
 
   @Test
-  @DisplayName("Returns empty when the customer service is unreachable")
+  @DisplayName("Should return empty when the customer service is unreachable")
   void returnsEmptyWhenCustomerServiceIsUnreachable() {
     // Arrange
     ExchangeFunction exchangeFunction =

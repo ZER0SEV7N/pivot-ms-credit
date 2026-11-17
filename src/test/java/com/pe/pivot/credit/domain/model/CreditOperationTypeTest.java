@@ -8,11 +8,11 @@ import org.junit.jupiter.api.Test;
 /**
  * Unit tests for {@link CreditOperationType}.
  */
-@DisplayName("CreditOperationType enumeration")
+@DisplayName("Should expose the CreditOperationType enumeration")
 class CreditOperationTypeTest {
 
   @Test
-  @DisplayName("Exposes all supported operation types")
+  @DisplayName("Should expose all supported operation types")
   void exposesAllOperationTypes() {
     // Arrange
     CreditOperationType[] expected = {
@@ -28,7 +28,7 @@ class CreditOperationTypeTest {
   }
 
   @Test
-  @DisplayName("Resolves an operation type by name")
+  @DisplayName("Should resolve an operation type by name")
   void resolvesOperationTypeByName() {
     // Arrange
     String name = "CONSUMPTION";

@@ -1,8 +1,7 @@
-package com.pe.pivot;
+package com.pe.pivot.credit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.pe.pivot.credit.MsCreditApplication;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import org.junit.jupiter.api.DisplayName;
@@ -14,25 +13,25 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  *
  * <p>These tests intentionally avoid loading a Spring context: the runtime configuration depends
  * on external infrastructure (Config Server, Vault and MongoDB) that is not available during unit
- * testing.</p>
+ * testing.
  */
-@DisplayName("MsCreditApplication bootstrap configuration")
+@DisplayName("Should expose a valid Spring Boot bootstrap")
 class MsCreditApplicationTests {
 
   @Test
-  @DisplayName("Is annotated as a Spring Boot application")
-  void isAnnotatedAsSpringBootApplication() {
+  @DisplayName("Should be annotated as a Spring Boot application")
+  void shouldBeAnnotatedAsSpringBootApplication() {
     // Act
     boolean annotated = MsCreditApplication.class
-            .isAnnotationPresent(SpringBootApplication.class);
+        .isAnnotationPresent(SpringBootApplication.class);
 
     // Assert
     assertThat(annotated).isTrue();
   }
 
   @Test
-  @DisplayName("Declares a public static main method")
-  void declaresAPublicStaticMainMethod() throws NoSuchMethodException {
+  @DisplayName("Should declare a public static main method")
+  void declaresPublicStaticMainMethod() throws NoSuchMethodException {
     // Act
     Method main = MsCreditApplication.class.getMethod("main", String[].class);
 

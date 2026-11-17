@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Unit tests for {@link CreditPersistenceMapper}.
  */
-@DisplayName("CreditPersistenceMapper document mapping")
+@DisplayName("Should map credit documents and domain objects")
 class CreditPersistenceMapperTest {
 
   private CryptoUtil cryptoUtil;
@@ -30,7 +30,7 @@ class CreditPersistenceMapperTest {
   }
 
   @Test
-  @DisplayName("Maps the domain to a document encrypting the credit number")
+  @DisplayName("Should map the domain to a document encrypting the credit number")
   void mapsDomainToDocumentEncryptingCreditNumber() {
     // Arrange
     Credit domain = fullCredit();
@@ -58,7 +58,7 @@ class CreditPersistenceMapperTest {
   }
 
   @Test
-  @DisplayName("Maps a domain with null optional fields to a document")
+  @DisplayName("Should map a domain with null optional fields to a document")
   void mapsDomainWithNullOptionalFieldsToDocument() {
     // Arrange
     Credit domain = Credit.builder().id("credit-2").build();
@@ -74,7 +74,7 @@ class CreditPersistenceMapperTest {
   }
 
   @Test
-  @DisplayName("Maps a document to the domain decrypting the credit number")
+  @DisplayName("Should map a document to the domain decrypting the credit number")
   void mapsDocumentToDomainDecryptingCreditNumber() {
     // Arrange
     CreditDocument document = CreditDocument.builder()
@@ -115,7 +115,7 @@ class CreditPersistenceMapperTest {
   }
 
   @Test
-  @DisplayName("Maps a document with null optional fields to the domain")
+  @DisplayName("Should map a document with null optional fields to the domain")
   void mapsDocumentWithNullOptionalFieldsToDomain() {
     // Arrange
     CreditDocument document = CreditDocument.builder().id("credit-3").build();

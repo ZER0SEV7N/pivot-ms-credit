@@ -27,7 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
  * Unit tests for {@link UpdateCreditUseCaseImpl}.
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("UpdateCreditUseCaseImpl administrative updates")
+@DisplayName("Should cover credit administrative updates")
 class UpdateCreditUseCaseImplTest {
 
   @Mock
@@ -54,7 +54,7 @@ class UpdateCreditUseCaseImplTest {
   }
 
   @Test
-  @DisplayName("Updates all provided administrative fields")
+  @DisplayName("Should update all provided administrative fields")
   void updatesAllProvidedAdministrativeFields() {
     // Arrange
     Credit incoming = Credit.builder()
@@ -82,7 +82,7 @@ class UpdateCreditUseCaseImplTest {
   }
 
   @Test
-  @DisplayName("Keeps existing values when incoming fields are null")
+  @DisplayName("Should keep existing values when incoming fields are null")
   void keepsExistingValuesWhenIncomingFieldsAreNull() {
     // Arrange
     Credit incoming = Credit.builder().build();
@@ -103,7 +103,7 @@ class UpdateCreditUseCaseImplTest {
   }
 
   @Test
-  @DisplayName("Rejects the update when the credit is closed")
+  @DisplayName("Should reject the update when the credit is closed")
   void rejectsUpdateWhenCreditIsClosed() {
     // Arrange
     existing.setStatus(CreditStatus.CLOSED);
@@ -120,7 +120,7 @@ class UpdateCreditUseCaseImplTest {
   }
 
   @Test
-  @DisplayName("Rejects the update when the credit is paid off")
+  @DisplayName("Should reject the update when the credit is paid off")
   void rejectsUpdateWhenCreditIsPaidOff() {
     // Arrange
     existing.setStatus(CreditStatus.PAID_OFF);
@@ -137,7 +137,7 @@ class UpdateCreditUseCaseImplTest {
   }
 
   @Test
-  @DisplayName("Propagates the credit not found error")
+  @DisplayName("Should propagate the credit not found error")
   void propagatesCreditNotFoundError() {
     // Arrange
     when(findCreditByIdUseCase.findById("credit-404"))

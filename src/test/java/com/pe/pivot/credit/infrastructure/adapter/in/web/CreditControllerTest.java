@@ -39,7 +39,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
  * Unit tests for {@link CreditController}.
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("CreditController REST endpoints")
+@DisplayName("Should expose the credit REST endpoints")
 class CreditControllerTest {
 
   @Mock
@@ -85,7 +85,7 @@ class CreditControllerTest {
   }
 
   @Test
-  @DisplayName("Create credit returns an unmasked credit number")
+  @DisplayName("Should return an unmasked credit number when creating a credit")
   void createCreditReturnsUnmaskedCreditNumber() {
     // Arrange
     CreditRequest request = CreditRequest.builder()
@@ -115,7 +115,7 @@ class CreditControllerTest {
   }
 
   @Test
-  @DisplayName("Get all credits returns masked credit numbers")
+  @DisplayName("Should return masked credit numbers when retrieving all credits")
   void getAllCreditsReturnsMaskedCreditNumbers() {
     // Arrange
     when(retrieveCreditUseCase.findAll()).thenReturn(Flowable.just(credit));
@@ -132,7 +132,7 @@ class CreditControllerTest {
   }
 
   @Test
-  @DisplayName("Get credit by id returns a masked credit number")
+  @DisplayName("Should return a masked credit number when retrieving a credit by id")
   void getCreditByIdReturnsMaskedCreditNumber() {
     // Arrange
     when(retrieveCreditUseCase.findById("credit-1")).thenReturn(Single.just(credit));
@@ -149,7 +149,7 @@ class CreditControllerTest {
   }
 
   @Test
-  @DisplayName("Get credit by number returns a masked credit number")
+  @DisplayName("Should return a masked credit number when retrieving a credit by number")
   void getCreditByNumberReturnsMaskedCreditNumber() {
     // Arrange
     when(retrieveCreditUseCase.findByCreditNumber("LN-1234567890"))
@@ -167,7 +167,7 @@ class CreditControllerTest {
   }
 
   @Test
-  @DisplayName("Get credits by customer returns masked credit numbers")
+  @DisplayName("Should return masked credit numbers for a customer")
   void getCreditsByCustomerIdReturnsMaskedCreditNumbers() {
     // Arrange
     when(retrieveCreditUseCase.findByCustomerId("cust-1")).thenReturn(Flowable.just(credit));
@@ -185,7 +185,7 @@ class CreditControllerTest {
   }
 
   @Test
-  @DisplayName("Get credit balance returns the balance with a masked number")
+  @DisplayName("Should return the credit balance with a masked number")
   void getCreditBalanceReturnsBalanceWithMaskedNumber() {
     // Arrange
     when(retrieveCreditUseCase.findById("credit-1")).thenReturn(Single.just(credit));
@@ -204,7 +204,7 @@ class CreditControllerTest {
   }
 
   @Test
-  @DisplayName("Update balance delegates the operation and masks the number")
+  @DisplayName("Should delegate the balance update and mask the credit number")
   void updateCreditBalanceDelegatesOperationAndReturnsMaskedNumber() {
     // Arrange
     when(updateCreditBalanceUseCase.updateBalance("credit-1", CreditOperationType.PAYMENT,
@@ -227,7 +227,7 @@ class CreditControllerTest {
   }
 
   @Test
-  @DisplayName("Update credit delegates the update and masks the number")
+  @DisplayName("Should delegate the update and mask the credit number")
   void updateCreditDelegatesUpdateAndReturnsMaskedNumber() {
     // Arrange
     CreditRequest request = CreditRequest.builder()
@@ -253,7 +253,7 @@ class CreditControllerTest {
   }
 
   @Test
-  @DisplayName("Delete credit completes when the use case completes")
+  @DisplayName("Should complete deletion when the use case completes")
   void deleteCreditCompletesWhenUseCaseCompletes() {
     // Arrange
     when(deleteCreditUseCase.delete("credit-1")).thenReturn(Completable.complete());

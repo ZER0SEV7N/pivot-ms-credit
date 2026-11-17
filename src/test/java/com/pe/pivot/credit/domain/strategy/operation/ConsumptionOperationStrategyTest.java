@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Unit tests for {@link ConsumptionOperationStrategy}.
  */
-@DisplayName("ConsumptionOperationStrategy consumption handling")
+@DisplayName("Should handle consumption operations")
 class ConsumptionOperationStrategyTest {
 
   private ConsumptionOperationStrategy strategy;
@@ -26,8 +26,11 @@ class ConsumptionOperationStrategyTest {
     strategy = new ConsumptionOperationStrategy();
   }
 
+  /**
+   * Verifies that the strategy only claims support for consumption operations.
+   */
   @Test
-  @DisplayName("Supports only consumption operations")
+  @DisplayName("Should support only consumption operations")
   void supportsOnlyConsumptionOperations() {
     // Act
     boolean consumptionSupported = strategy.supports(CreditOperationType.CONSUMPTION);
@@ -39,7 +42,7 @@ class ConsumptionOperationStrategyTest {
   }
 
   @Test
-  @DisplayName("Rejects consumption on loan products")
+  @DisplayName("Should reject consumption on loan products")
   void rejectsConsumptionOnLoanProducts() {
     // Arrange
     Credit credit = Credit.builder()
@@ -58,7 +61,7 @@ class ConsumptionOperationStrategyTest {
   }
 
   @Test
-  @DisplayName("Rejects consumption when the available limit is insufficient")
+  @DisplayName("Should reject consumption when the available limit is insufficient")
   void rejectsConsumptionWhenAvailableLimitIsInsufficient() {
     // Arrange
     Credit credit = Credit.builder()
@@ -78,7 +81,7 @@ class ConsumptionOperationStrategyTest {
   }
 
   @Test
-  @DisplayName("Applies consumption updating used and available amounts")
+  @DisplayName("Should apply consumption updating used and available amounts")
   void appliesConsumptionUpdatingUsedAndAvailableAmounts() {
     // Arrange
     Credit credit = Credit.builder()
@@ -100,7 +103,7 @@ class ConsumptionOperationStrategyTest {
   }
 
   @Test
-  @DisplayName("Treats a null used amount as zero")
+  @DisplayName("Should treat a null used amount as zero")
   void treatsNullUsedAmountAsZero() {
     // Arrange
     Credit credit = Credit.builder()
@@ -121,7 +124,7 @@ class ConsumptionOperationStrategyTest {
   }
 
   @Test
-  @DisplayName("Treats a null available amount as zero")
+  @DisplayName("Should treat a null available amount as zero")
   void treatsNullAvailableAmountAsZero() {
     // Arrange
     Credit credit = Credit.builder()

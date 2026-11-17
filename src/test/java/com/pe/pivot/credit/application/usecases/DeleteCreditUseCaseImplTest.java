@@ -28,7 +28,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
  * Unit tests for {@link DeleteCreditUseCaseImpl}.
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("DeleteCreditUseCaseImpl credit closure")
+@DisplayName("Should cover credit closure")
 class DeleteCreditUseCaseImplTest {
 
   @Mock
@@ -45,7 +45,7 @@ class DeleteCreditUseCaseImplTest {
   }
 
   @Test
-  @DisplayName("Closes the credit when there is no outstanding debt")
+  @DisplayName("Should close the credit when there is no outstanding debt")
   void closesCreditWhenThereIsNoOutstandingDebt() {
     // Arrange
     Credit credit = Credit.builder()
@@ -69,7 +69,7 @@ class DeleteCreditUseCaseImplTest {
   }
 
   @Test
-  @DisplayName("Fails when the credit is already closed")
+  @DisplayName("Should fail when the credit is already closed")
   void failsWhenCreditIsAlreadyClosed() {
     // Arrange
     Credit credit = Credit.builder()
@@ -88,7 +88,7 @@ class DeleteCreditUseCaseImplTest {
   }
 
   @Test
-  @DisplayName("Fails when the credit has outstanding debt")
+  @DisplayName("Should fail when the credit has outstanding debt")
   void failsWhenCreditHasOutstandingDebt() {
     // Arrange
     Credit credit = Credit.builder()
@@ -109,7 +109,7 @@ class DeleteCreditUseCaseImplTest {
   }
 
   @Test
-  @DisplayName("Propagates the credit not found error")
+  @DisplayName("Should propagate the credit not found error")
   void propagatesCreditNotFoundError() {
     // Arrange
     when(findCreditByIdUseCase.findById("credit-1"))
@@ -124,7 +124,7 @@ class DeleteCreditUseCaseImplTest {
   }
 
   @Test
-  @DisplayName("Closes the credit when the used amount is null")
+  @DisplayName("Should close the credit when the used amount is null")
   void closesCreditWhenUsedAmountIsNull() {
     // Arrange
     Credit credit = Credit.builder()

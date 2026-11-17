@@ -1,8 +1,8 @@
 package com.pe.pivot.credit.infrastructure.adapter.out.client;
 
-import com.pe.pivot.account.infrastructure.adapter.out.client.customer.dto.CustomerClientResponse;
 import com.pe.pivot.credit.domain.model.CustomerSummary;
 import com.pe.pivot.credit.domain.port.out.CustomerClientPort;
+import com.pe.pivot.credit.infrastructure.adapter.out.client.dto.CustomerClientResponse;
 import io.reactivex.rxjava3.core.Maybe;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

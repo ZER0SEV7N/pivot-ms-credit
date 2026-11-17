@@ -8,11 +8,11 @@ import org.junit.jupiter.api.Test;
 /**
  * Unit tests for {@link CreditStatus}.
  */
-@DisplayName("CreditStatus lifecycle enumeration")
+@DisplayName("Should expose the CreditStatus lifecycle enumeration")
 class CreditStatusTest {
 
   @Test
-  @DisplayName("Exposes all lifecycle statuses")
+  @DisplayName("Should expose all lifecycle statuses")
   void exposesAllLifecycleStatuses() {
     // Arrange
     CreditStatus[] expected = {
@@ -30,7 +30,7 @@ class CreditStatusTest {
   }
 
   @Test
-  @DisplayName("Resolves a status by name")
+  @DisplayName("Should resolve a status by name")
   void resolvesStatusByName() {
     // Arrange
     String name = "PAID_OFF";

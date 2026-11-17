@@ -29,7 +29,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
  * Unit tests for {@link CreditBalanceUseCaseImpl}.
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("CreditBalanceUseCaseImpl balance updates")
+@DisplayName("Should cover credit balance updates")
 class CreditBalanceUseCaseImplTest {
 
   @Mock
@@ -58,7 +58,7 @@ class CreditBalanceUseCaseImplTest {
   }
 
   @Test
-  @DisplayName("Applies the operation and persists the updated credit")
+  @DisplayName("Should apply the operation and persist the updated credit")
   void appliesOperationAndPersistsUpdatedCredit() {
     // Arrange
     Credit updatedCredit = Credit.builder()
@@ -86,7 +86,7 @@ class CreditBalanceUseCaseImplTest {
   }
 
   @Test
-  @DisplayName("Rejects the operation when the credit is not active")
+  @DisplayName("Should reject the operation when the credit is not active")
   void rejectsOperationWhenCreditIsNotActive() {
     // Arrange
     credit.setStatus(CreditStatus.CLOSED);
@@ -104,7 +104,7 @@ class CreditBalanceUseCaseImplTest {
   }
 
   @Test
-  @DisplayName("Rejects a null amount")
+  @DisplayName("Should reject a null amount")
   void rejectsNullAmount() {
     // Arrange
     when(findCreditByIdUseCase.findById("credit-1")).thenReturn(Single.just(credit));
@@ -120,7 +120,7 @@ class CreditBalanceUseCaseImplTest {
   }
 
   @Test
-  @DisplayName("Rejects a zero amount")
+  @DisplayName("Should reject a zero amount")
   void rejectsZeroAmount() {
     // Arrange
     when(findCreditByIdUseCase.findById("credit-1")).thenReturn(Single.just(credit));
@@ -137,7 +137,7 @@ class CreditBalanceUseCaseImplTest {
   }
 
   @Test
-  @DisplayName("Rejects a negative amount")
+  @DisplayName("Should reject a negative amount")
   void rejectsNegativeAmount() {
     // Arrange
     when(findCreditByIdUseCase.findById("credit-1")).thenReturn(Single.just(credit));
@@ -154,7 +154,7 @@ class CreditBalanceUseCaseImplTest {
   }
 
   @Test
-  @DisplayName("Rejects an unsupported operation type")
+  @DisplayName("Should reject an unsupported operation type")
   void rejectsUnsupportedOperationType() {
     // Arrange
     when(findCreditByIdUseCase.findById("credit-1")).thenReturn(Single.just(credit));
@@ -172,7 +172,7 @@ class CreditBalanceUseCaseImplTest {
   }
 
   @Test
-  @DisplayName("Propagates the credit not found error")
+  @DisplayName("Should propagate the credit not found error")
   void propagatesCreditNotFoundError() {
     // Arrange
     when(findCreditByIdUseCase.findById("credit-1")).thenReturn(

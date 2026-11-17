@@ -8,11 +8,11 @@ import org.junit.jupiter.api.Test;
 /**
  * Unit tests for {@link CustomerSummary} projection predicates.
  */
-@DisplayName("CustomerSummary projection predicates")
+@DisplayName("Should expose CustomerSummary projection predicates")
 class CustomerSummaryTest {
 
   @Test
-  @DisplayName("Detects an active customer ignoring case")
+  @DisplayName("Should detect an active customer ignoring case")
   void detectsActiveCustomerIgnoringCase() {
     // Arrange
     CustomerSummary customer = CustomerSummary.builder().status("active").build();
@@ -25,7 +25,7 @@ class CustomerSummaryTest {
   }
 
   @Test
-  @DisplayName("Returns false when the customer is not active")
+  @DisplayName("Should return false when the customer is not active")
   void returnsFalseWhenCustomerIsNotActive() {
     // Arrange
     CustomerSummary customer = CustomerSummary.builder().status("BLOCKED").build();
@@ -38,7 +38,7 @@ class CustomerSummaryTest {
   }
 
   @Test
-  @DisplayName("Returns false when the customer status is null")
+  @DisplayName("Should return false when the customer status is null")
   void returnsFalseWhenCustomerStatusIsNull() {
     // Arrange
     CustomerSummary customer = CustomerSummary.builder().status(null).build();
@@ -51,7 +51,7 @@ class CustomerSummaryTest {
   }
 
   @Test
-  @DisplayName("Detects a personal customer ignoring case")
+  @DisplayName("Should detect a personal customer ignoring case")
   void detectsPersonalCustomerIgnoringCase() {
     // Arrange
     CustomerSummary customer = CustomerSummary.builder().customerType("personal").build();
@@ -64,7 +64,7 @@ class CustomerSummaryTest {
   }
 
   @Test
-  @DisplayName("Detects a business customer ignoring case")
+  @DisplayName("Should detect a business customer ignoring case")
   void detectsBusinessCustomerIgnoringCase() {
     // Arrange
     CustomerSummary customer = CustomerSummary.builder().customerType("business").build();
@@ -78,7 +78,7 @@ class CustomerSummaryTest {
   }
 
   @Test
-  @DisplayName("Returns false for a null customer type")
+  @DisplayName("Should return false for a null customer type")
   void returnsFalseForNullCustomerType() {
     // Arrange
     CustomerSummary customer = CustomerSummary.builder().customerType(null).build();

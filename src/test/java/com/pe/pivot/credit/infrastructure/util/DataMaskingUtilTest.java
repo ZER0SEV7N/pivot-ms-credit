@@ -8,11 +8,11 @@ import org.junit.jupiter.api.Test;
 /**
  * Unit tests for {@link DataMaskingUtil}.
  */
-@DisplayName("DataMaskingUtil credit number masking")
+@DisplayName("Should mask credit numbers")
 class DataMaskingUtilTest {
 
   @Test
-  @DisplayName("Masks a null credit number")
+  @DisplayName("Should mask a null credit number")
   void masksNullCreditNumber() {
     // Act
     String masked = DataMaskingUtil.maskCreditNumber(null);
@@ -22,7 +22,7 @@ class DataMaskingUtilTest {
   }
 
   @Test
-  @DisplayName("Masks a credit number shorter than four characters")
+  @DisplayName("Should mask a credit number shorter than four characters")
   void masksCreditNumberShorterThanFourCharacters() {
     // Act
     String masked = DataMaskingUtil.maskCreditNumber("123");
@@ -32,7 +32,7 @@ class DataMaskingUtilTest {
   }
 
   @Test
-  @DisplayName("Keeps a four character credit number visible")
+  @DisplayName("Should keep a four character credit number visible")
   void keepsCreditNumberWithExactlyFourCharactersVisible() {
     // Act
     String masked = DataMaskingUtil.maskCreditNumber("5678");
@@ -42,7 +42,7 @@ class DataMaskingUtilTest {
   }
 
   @Test
-  @DisplayName("Masks all but the last four characters")
+  @DisplayName("Should mask all but the last four characters")
   void masksAllButLastFourCharacters() {
     // Act
     String masked = DataMaskingUtil.maskCreditNumber("LN-1234567890");

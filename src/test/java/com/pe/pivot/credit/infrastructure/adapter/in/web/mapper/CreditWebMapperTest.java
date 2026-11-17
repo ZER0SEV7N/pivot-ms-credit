@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Unit tests for {@link CreditWebMapper}.
  */
-@DisplayName("CreditWebMapper request and response mapping")
+@DisplayName("Should map credit web requests and responses")
 class CreditWebMapperTest {
 
   private CreditWebMapper mapper;
@@ -45,7 +45,7 @@ class CreditWebMapperTest {
   }
 
   @Test
-  @DisplayName("Maps a request to the domain credit")
+  @DisplayName("Should map a request to the domain credit")
   void mapsRequestToDomainCredit() {
     // Arrange
     CreditRequest request = CreditRequest.builder()
@@ -74,7 +74,7 @@ class CreditWebMapperTest {
   }
 
   @Test
-  @DisplayName("Maps an unmasked response keeping the full credit number")
+  @DisplayName("Should map an unmasked response keeping the full credit number")
   void mapsUnmaskedResponseKeepingFullCreditNumber() {
     // Act
     CreditResponse response = mapper.toUnmaskedResponse(credit);
@@ -96,7 +96,7 @@ class CreditWebMapperTest {
   }
 
   @Test
-  @DisplayName("Maps a masked response hiding the credit number")
+  @DisplayName("Should map a masked response hiding the credit number")
   void mapsMaskedResponseHidingCreditNumber() {
     // Act
     CreditResponse response = mapper.toResponse(credit);
@@ -107,7 +107,7 @@ class CreditWebMapperTest {
   }
 
   @Test
-  @DisplayName("Maps a balance response with a masked number and timestamp")
+  @DisplayName("Should map a balance response with a masked number and timestamp")
   void mapsBalanceResponseWithMaskedNumberAndQueryTimestamp() {
     // Act
     CreditBalanceResponse response = mapper.toBalanceResponse(credit);

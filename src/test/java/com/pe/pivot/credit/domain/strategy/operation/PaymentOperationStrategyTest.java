@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Unit tests for {@link PaymentOperationStrategy}.
  */
-@DisplayName("PaymentOperationStrategy payment handling")
+@DisplayName("Should handle payment operations")
 class PaymentOperationStrategyTest {
 
   private PaymentOperationStrategy strategy;
@@ -26,8 +26,11 @@ class PaymentOperationStrategyTest {
     strategy = new PaymentOperationStrategy();
   }
 
+  /**
+   * Verifies that the strategy only claims support for payment operations.
+   */
   @Test
-  @DisplayName("Supports only payment operations")
+  @DisplayName("Should support only payment operations")
   void supportsOnlyPaymentOperations() {
     // Act
     boolean paymentSupported = strategy.supports(CreditOperationType.PAYMENT);
@@ -39,7 +42,7 @@ class PaymentOperationStrategyTest {
   }
 
   @Test
-  @DisplayName("Rejects payment when there is no outstanding debt")
+  @DisplayName("Should reject payment when there is no outstanding debt")
   void rejectsPaymentWhenThereIsNoOutstandingDebt() {
     // Arrange
     Credit credit = Credit.builder()
@@ -57,7 +60,7 @@ class PaymentOperationStrategyTest {
   }
 
   @Test
-  @DisplayName("Treats a null used amount as no outstanding debt")
+  @DisplayName("Should treat a null used amount as no outstanding debt")
   void treatsNullUsedAmountAsNoOutstandingDebt() {
     // Arrange
     Credit credit = Credit.builder()
@@ -74,7 +77,7 @@ class PaymentOperationStrategyTest {
   }
 
   @Test
-  @DisplayName("Rejects a payment that exceeds the outstanding debt")
+  @DisplayName("Should reject a payment that exceeds the outstanding debt")
   void rejectsPaymentThatExceedsOutstandingDebt() {
     // Arrange
     Credit credit = Credit.builder()
@@ -83,7 +86,8 @@ class PaymentOperationStrategyTest {
             .build();
 
     // Act
-    TestObserver<Credit> observer = strategy.applyOperation(credit, new BigDecimal("150.00")).test();
+    TestObserver<Credit> observer = strategy
+            .applyOperation(credit, new BigDecimal("150.00")).test();
 
     // Assert
     observer.assertNoValues();
@@ -93,7 +97,7 @@ class PaymentOperationStrategyTest {
   }
 
   @Test
-  @DisplayName("Applies a partial payment on a loan without changing its status")
+  @DisplayName("Should apply a partial payment on a loan without changing its status")
   void appliesPartialPaymentOnLoanWithoutChangingStatus() {
     // Arrange
     Credit credit = Credit.builder()
@@ -115,7 +119,7 @@ class PaymentOperationStrategyTest {
   }
 
   @Test
-  @DisplayName("Marks a loan as paid off when the debt is fully settled")
+  @DisplayName("Should mark a loan as paid off when the debt is fully settled")
   void marksLoanAsPaidOffWhenDebtIsFullySettled() {
     // Arrange
     Credit credit = Credit.builder()
@@ -125,7 +129,8 @@ class PaymentOperationStrategyTest {
             .build();
 
     // Act
-    TestObserver<Credit> observer = strategy.applyOperation(credit, new BigDecimal("100.00")).test();
+    TestObserver<Credit> observer = strategy
+            .applyOperation(credit, new BigDecimal("100.00")).test();
 
     // Assert
     observer.assertNoErrors();
@@ -136,7 +141,7 @@ class PaymentOperationStrategyTest {
   }
 
   @Test
-  @DisplayName("Restores the available limit on a credit card payment")
+  @DisplayName("Should restore the available limit on a credit card payment")
   void restoresAvailableLimitOnCreditCardPayment() {
     // Arrange
     Credit credit = Credit.builder()
@@ -159,7 +164,7 @@ class PaymentOperationStrategyTest {
   }
 
   @Test
-  @DisplayName("Treats a null available amount as zero on a card payment")
+  @DisplayName("Should treat a null available amount as zero on a card payment")
   void treatsNullAvailableAmountAsZeroOnCreditCardPayment() {
     // Arrange
     Credit credit = Credit.builder()

@@ -15,7 +15,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Unit tests for {@link BusinessCreditStrategy}.
  */
-@DisplayName("BusinessCreditStrategy customer validation")
+@DisplayName("Should validate business customer credits")
 class BusinessCreditStrategyTest {
 
   private BusinessCreditStrategy strategy;
@@ -25,8 +25,11 @@ class BusinessCreditStrategyTest {
     strategy = new BusinessCreditStrategy();
   }
 
+  /**
+   * Verifies that the strategy only claims support for business customers.
+   */
   @Test
-  @DisplayName("Supports only business customers")
+  @DisplayName("Should support only business customers")
   void supportsOnlyBusinessCustomers() {
     // Act
     boolean businessSupported = strategy.supports("BUSINESS");
@@ -40,7 +43,7 @@ class BusinessCreditStrategyTest {
   }
 
   @Test
-  @DisplayName("Accepts a business loan for a business customer")
+  @DisplayName("Should accept a business loan for a business customer")
   void acceptsBusinessLoanForBusinessCustomer() {
     // Arrange
     CustomerSummary customer = businessCustomer();
@@ -57,7 +60,7 @@ class BusinessCreditStrategyTest {
   }
 
   @Test
-  @DisplayName("Accepts a business credit card for a business customer")
+  @DisplayName("Should accept a business credit card for a business customer")
   void acceptsBusinessCreditCardForBusinessCustomer() {
     // Arrange
     CustomerSummary customer = businessCustomer();
@@ -74,7 +77,7 @@ class BusinessCreditStrategyTest {
   }
 
   @Test
-  @DisplayName("Rejects a personal loan for a business customer")
+  @DisplayName("Should reject a personal loan for a business customer")
   void rejectsPersonalLoanForBusinessCustomer() {
     // Arrange
     CustomerSummary customer = businessCustomer();
@@ -91,7 +94,7 @@ class BusinessCreditStrategyTest {
   }
 
   @Test
-  @DisplayName("Rejects a personal credit card for a business customer")
+  @DisplayName("Should reject a personal credit card for a business customer")
   void rejectsPersonalCreditCardForBusinessCustomer() {
     // Arrange
     CustomerSummary customer = businessCustomer();

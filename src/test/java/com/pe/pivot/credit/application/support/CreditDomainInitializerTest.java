@@ -24,7 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
  * Unit tests for {@link CreditDomainInitializer}.
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("CreditDomainInitializer domain defaults")
+@DisplayName("Should initialize credit domain defaults")
 class CreditDomainInitializerTest {
 
   @Mock
@@ -41,7 +41,7 @@ class CreditDomainInitializerTest {
   }
 
   @Test
-  @DisplayName("Initializes loan defaults and generates a credit number")
+  @DisplayName("Should initialize loan defaults and generate a credit number")
   void initializesLoanDefaultsAndGeneratesCreditNumber() {
     // Arrange
     Credit credit = Credit.builder()
@@ -70,7 +70,7 @@ class CreditDomainInitializerTest {
   }
 
   @Test
-  @DisplayName("Keeps card values and applies the default payment due day")
+  @DisplayName("Should keep card values and apply the default payment due day")
   void keepsProvidedValuesForCreditCardAndAppliesDefaultPaymentDueDay() {
     // Arrange
     Credit credit = Credit.builder()
@@ -100,7 +100,7 @@ class CreditDomainInitializerTest {
   }
 
   @Test
-  @DisplayName("Preserves the provided payment due day on a credit card")
+  @DisplayName("Should preserve the provided payment due day on a credit card")
   void preservesProvidedPaymentDueDayForCreditCard() {
     // Arrange
     Credit credit = Credit.builder()
@@ -109,7 +109,8 @@ class CreditDomainInitializerTest {
             .creditLimit(new BigDecimal("200.00"))
             .paymentDueDay(5)
             .build();
-    when(rules.resolveDefaultRate(CreditType.BUSINESS_CREDIT_CARD)).thenReturn(new BigDecimal("0.25"));
+    when(rules.resolveDefaultRate(CreditType.BUSINESS_CREDIT_CARD))
+            .thenReturn(new BigDecimal("0.25"));
 
     // Act
     initializer.initializeDefaults(credit);
@@ -120,18 +121,19 @@ class CreditDomainInitializerTest {
   }
 
   @Test
-  @DisplayName("Generates a business card number when it is blank")
+  @DisplayName("Should generate a business card number when it is blank")
   void generatesBusinessCreditCardNumberWhenExistingNumberIsBlank() {
     // Arrange
+    when(cryptoUtil.hashSha256(anyString())).thenReturn("hashed");
+    when(rules.resolveDefaultRate(CreditType.BUSINESS_CREDIT_CARD))
+            .thenReturn(new BigDecimal("0.22"));
+    when(rules.getDefaultPaymentDueDay()).thenReturn(20);
+
     Credit credit = Credit.builder()
             .creditNumber("   ")
             .creditType(CreditType.BUSINESS_CREDIT_CARD)
             .creditLimit(new BigDecimal("800.00"))
             .build();
-    when(cryptoUtil.hashSha256(anyString())).thenReturn("hashed");
-    when(rules.resolveDefaultRate(CreditType.BUSINESS_CREDIT_CARD))
-            .thenReturn(new BigDecimal("0.22"));
-    when(rules.getDefaultPaymentDueDay()).thenReturn(20);
 
     // Act
     initializer.initializeDefaults(credit);

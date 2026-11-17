@@ -36,7 +36,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
  * Unit tests for {@link CreateCreditUseCaseImpl}.
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("CreateCreditUseCaseImpl credit creation flow")
+@DisplayName("Should cover the credit creation flow")
 class CreateCreditUseCaseImplTest {
 
   @Mock
@@ -73,7 +73,7 @@ class CreateCreditUseCaseImplTest {
   }
 
   @Test
-  @DisplayName("Creates a credit when the customer is active and validations pass")
+  @DisplayName("Should create a credit when the customer is active and validations pass")
   void createsCreditWhenCustomerIsActiveAndValidationsPass() {
     // Arrange
     CustomerSummary customer = activeCustomer();
@@ -100,7 +100,7 @@ class CreateCreditUseCaseImplTest {
   }
 
   @Test
-  @DisplayName("Fails when the customer does not exist")
+  @DisplayName("Should fail when the customer does not exist")
   void failsWhenCustomerDoesNotExist() {
     // Arrange
     when(customerClient.findCustomerById("cust-1")).thenReturn(Maybe.empty());
@@ -116,7 +116,7 @@ class CreateCreditUseCaseImplTest {
   }
 
   @Test
-  @DisplayName("Fails when the customer is not active")
+  @DisplayName("Should fail when the customer is not active")
   void failsWhenCustomerIsNotActive() {
     // Arrange
     CustomerSummary inactiveCustomer = CustomerSummary.builder()
@@ -136,7 +136,7 @@ class CreateCreditUseCaseImplTest {
   }
 
   @Test
-  @DisplayName("Fails when no validation strategy supports the customer type")
+  @DisplayName("Should fail when no validation strategy supports the customer type")
   void failsWhenNoValidationStrategySupportsCustomerType() {
     // Arrange
     CustomerSummary customer = activeCustomer();
@@ -154,7 +154,7 @@ class CreateCreditUseCaseImplTest {
   }
 
   @Test
-  @DisplayName("Fails when the validation strategy rejects the credit")
+  @DisplayName("Should fail when the validation strategy rejects the credit")
   void failsWhenValidationStrategyRejectsTheCredit() {
     // Arrange
     CustomerSummary customer = activeCustomer();
@@ -176,7 +176,7 @@ class CreateCreditUseCaseImplTest {
   }
 
   @Test
-  @DisplayName("Fails when the credit number already exists")
+  @DisplayName("Should fail when the credit number already exists")
   void failsWhenCreditNumberAlreadyExists() {
     // Arrange
     CustomerSummary customer = activeCustomer();
@@ -197,7 +197,7 @@ class CreateCreditUseCaseImplTest {
   }
 
   @Test
-  @DisplayName("Propagates repository errors while querying customer credits")
+  @DisplayName("Should propagate repository errors while querying customer credits")
   void propagatesRepositoryErrorWhenQueryingCustomerCredits() {
     // Arrange
     CustomerSummary customer = activeCustomer();

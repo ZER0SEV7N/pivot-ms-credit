@@ -10,11 +10,11 @@ import org.junit.jupiter.api.Test;
 /**
  * Unit tests for {@link Credit} business logic methods.
  */
-@DisplayName("Credit domain business rules")
+@DisplayName("Should enforce credit business rules")
 class CreditTest {
 
   @Test
-  @DisplayName("Can be closed when the used amount is null")
+  @DisplayName("Should be closable when the used amount is null")
   void canBeClosedWhenUsedAmountIsNull() {
     // Arrange
     Credit credit = Credit.builder().usedAmount(null).build();
@@ -27,7 +27,7 @@ class CreditTest {
   }
 
   @Test
-  @DisplayName("Can be closed when the used amount is zero")
+  @DisplayName("Should be closable when the used amount is zero")
   void canBeClosedWhenUsedAmountIsZero() {
     // Arrange
     Credit credit = Credit.builder().usedAmount(new BigDecimal("0.00")).build();
@@ -40,7 +40,7 @@ class CreditTest {
   }
 
   @Test
-  @DisplayName("Cannot be closed when the used amount is greater than zero")
+  @DisplayName("Should not be closable when the used amount is greater than zero")
   void cannotBeClosedWhenUsedAmountIsPositive() {
     // Arrange
     Credit credit = Credit.builder().usedAmount(new BigDecimal("0.01")).build();
@@ -53,7 +53,7 @@ class CreditTest {
   }
 
   @Test
-  @DisplayName("Detects an active personal loan")
+  @DisplayName("Should detect an active personal loan")
   void activePersonalLoanReturnsTrueForActivePersonalLoan() {
     // Arrange
     Credit credit = Credit.builder()
@@ -69,7 +69,7 @@ class CreditTest {
   }
 
   @Test
-  @DisplayName("Does not detect a closed personal loan as active")
+  @DisplayName("Should not detect a closed personal loan as active")
   void activePersonalLoanReturnsFalseForClosedPersonalLoan() {
     // Arrange
     Credit credit = Credit.builder()
@@ -85,7 +85,7 @@ class CreditTest {
   }
 
   @Test
-  @DisplayName("Does not detect a paid off personal loan as active")
+  @DisplayName("Should not detect a paid off personal loan as active")
   void activePersonalLoanReturnsFalseForPaidOffPersonalLoan() {
     // Arrange
     Credit credit = Credit.builder()
@@ -101,7 +101,7 @@ class CreditTest {
   }
 
   @Test
-  @DisplayName("Does not detect another product type as a personal loan")
+  @DisplayName("Should not detect another product type as a personal loan")
   void activePersonalLoanReturnsFalseForNonPersonalLoanProduct() {
     // Arrange
     Credit credit = Credit.builder()
@@ -117,7 +117,7 @@ class CreditTest {
   }
 
   @Test
-  @DisplayName("Getters and setters round trip every field")
+  @DisplayName("Should round trip every field through getters and setters")
   void settersAndGettersRoundTripAllFields() {
     // Arrange
     Credit credit = new Credit();

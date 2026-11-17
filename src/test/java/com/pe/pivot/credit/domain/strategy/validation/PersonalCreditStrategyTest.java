@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Unit tests for {@link PersonalCreditStrategy}.
  */
-@DisplayName("PersonalCreditStrategy customer validation")
+@DisplayName("Should validate personal customer credits")
 class PersonalCreditStrategyTest {
 
   private PersonalCreditStrategy strategy;
@@ -34,8 +34,11 @@ class PersonalCreditStrategyTest {
             .build();
   }
 
+  /**
+   * Verifies that the strategy only claims support for personal customers.
+   */
   @Test
-  @DisplayName("Supports only personal customers")
+  @DisplayName("Should support only personal customers")
   void supportsOnlyPersonalCustomers() {
     // Act
     boolean personalSupported = strategy.supports("PERSONAL");
@@ -49,7 +52,7 @@ class PersonalCreditStrategyTest {
   }
 
   @Test
-  @DisplayName("Accepts a personal credit card when no restrictions apply")
+  @DisplayName("Should accept a personal credit card when no restrictions apply")
   void acceptsPersonalCreditCardWhenNoRestrictionsApply() {
     // Arrange
     Credit newCredit = Credit.builder().creditType(CreditType.PERSONAL_CREDIT_CARD).build();
@@ -65,7 +68,7 @@ class PersonalCreditStrategyTest {
   }
 
   @Test
-  @DisplayName("Rejects a business loan for a personal customer")
+  @DisplayName("Should reject a business loan for a personal customer")
   void rejectsBusinessLoanForPersonalCustomer() {
     // Arrange
     Credit newCredit = Credit.builder().creditType(CreditType.BUSINESS_LOAN).build();
@@ -81,7 +84,7 @@ class PersonalCreditStrategyTest {
   }
 
   @Test
-  @DisplayName("Rejects a business credit card for a personal customer")
+  @DisplayName("Should reject a business credit card for a personal customer")
   void rejectsBusinessCreditCardForPersonalCustomer() {
     // Arrange
     Credit newCredit = Credit.builder().creditType(CreditType.BUSINESS_CREDIT_CARD).build();
@@ -96,7 +99,7 @@ class PersonalCreditStrategyTest {
   }
 
   @Test
-  @DisplayName("Rejects a second active personal loan")
+  @DisplayName("Should reject a second active personal loan")
   void rejectsSecondActivePersonalLoan() {
     // Arrange
     Credit newCredit = Credit.builder().creditType(CreditType.PERSONAL_LOAN).build();
@@ -116,7 +119,7 @@ class PersonalCreditStrategyTest {
   }
 
   @Test
-  @DisplayName("Allows a personal loan when the previous loan is closed")
+  @DisplayName("Should allow a personal loan when the previous loan is closed")
   void allowsPersonalLoanWhenPreviousLoanIsClosed() {
     // Arrange
     Credit newCredit = Credit.builder().creditType(CreditType.PERSONAL_LOAN).build();
@@ -136,7 +139,7 @@ class PersonalCreditStrategyTest {
   }
 
   @Test
-  @DisplayName("Allows a personal loan when other credits are not personal loans")
+  @DisplayName("Should allow a personal loan when other credits are not personal loans")
   void allowsPersonalLoanWhenExistingCreditsAreNotPersonalLoans() {
     // Arrange
     Credit newCredit = Credit.builder().creditType(CreditType.PERSONAL_LOAN).build();

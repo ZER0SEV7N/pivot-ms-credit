@@ -24,7 +24,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
  * Unit tests for {@link RetrieveCreditUseCaseImpl}.
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("RetrieveCreditUseCaseImpl read operations")
+@DisplayName("Should cover credit read operations")
 class RetrieveCreditUseCaseImplTest {
 
   @Mock
@@ -44,7 +44,7 @@ class RetrieveCreditUseCaseImplTest {
   }
 
   @Test
-  @DisplayName("Returns all credits")
+  @DisplayName("Should return all credits")
   void returnsAllCredits() {
     // Arrange
     Credit first = Credit.builder().id("credit-1").build();
@@ -62,7 +62,7 @@ class RetrieveCreditUseCaseImplTest {
   }
 
   @Test
-  @DisplayName("Delegates find by id to the find credit use case")
+  @DisplayName("Should delegate the find by id lookup to the find credit use case")
   void delegatesFindByIdToFindCreditUseCase() {
     // Arrange
     Credit credit = Credit.builder().id("credit-1").build();
@@ -79,7 +79,7 @@ class RetrieveCreditUseCaseImplTest {
   }
 
   @Test
-  @DisplayName("Finds a credit by its hashed credit number")
+  @DisplayName("Should find a credit by its hashed credit number")
   void findsCreditByHashedCreditNumber() {
     // Arrange
     Credit credit = Credit.builder().id("credit-1").creditNumber("LN-1234567890").build();
@@ -97,7 +97,7 @@ class RetrieveCreditUseCaseImplTest {
   }
 
   @Test
-  @DisplayName("Fails when the credit number does not exist")
+  @DisplayName("Should fail when the credit number does not exist")
   void failsWhenCreditNumberDoesNotExist() {
     // Arrange
     when(cryptoUtil.hashSha256("LN-1234567890")).thenReturn("hashed-number");
@@ -113,7 +113,7 @@ class RetrieveCreditUseCaseImplTest {
   }
 
   @Test
-  @DisplayName("Returns the credits of a customer")
+  @DisplayName("Should return the credits of a customer")
   void returnsCreditsForCustomer() {
     // Arrange
     Credit credit = Credit.builder().id("credit-1").customerId("cust-1").build();
@@ -130,7 +130,7 @@ class RetrieveCreditUseCaseImplTest {
   }
 
   @Test
-  @DisplayName("Propagates repository errors when searching by credit number")
+  @DisplayName("Should propagate repository errors when searching by credit number")
   void propagatesRepositoryErrorWhenSearchingByCreditNumber() {
     // Arrange
     when(cryptoUtil.hashSha256("LN-1234567890")).thenReturn("hashed-number");

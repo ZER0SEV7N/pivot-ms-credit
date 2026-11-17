@@ -8,11 +8,11 @@ import org.junit.jupiter.api.Test;
 /**
  * Unit tests for {@link CreditType} product metadata and convenience methods.
  */
-@DisplayName("CreditType product metadata")
+@DisplayName("Should expose CreditType product metadata")
 class CreditTypeTest {
 
   @Test
-  @DisplayName("Personal loan metadata is correct")
+  @DisplayName("Should expose the correct personal loan metadata")
   void personalLoanMetadataIsCorrect() {
     // Arrange
     CreditType type = CreditType.PERSONAL_LOAN;
@@ -28,7 +28,7 @@ class CreditTypeTest {
   }
 
   @Test
-  @DisplayName("Business loan metadata is correct")
+  @DisplayName("Should expose the correct business loan metadata")
   void businessLoanMetadataIsCorrect() {
     // Arrange
     CreditType type = CreditType.BUSINESS_LOAN;
@@ -44,7 +44,7 @@ class CreditTypeTest {
   }
 
   @Test
-  @DisplayName("Personal credit card metadata is correct")
+  @DisplayName("Should expose the correct personal credit card metadata")
   void personalCreditCardMetadataIsCorrect() {
     // Arrange
     CreditType type = CreditType.PERSONAL_CREDIT_CARD;
@@ -60,7 +60,7 @@ class CreditTypeTest {
   }
 
   @Test
-  @DisplayName("Business credit card metadata is correct")
+  @DisplayName("Should expose the correct business credit card metadata")
   void businessCreditCardMetadataIsCorrect() {
     // Arrange
     CreditType type = CreditType.BUSINESS_CREDIT_CARD;

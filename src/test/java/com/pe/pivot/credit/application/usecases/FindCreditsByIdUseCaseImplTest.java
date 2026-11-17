@@ -19,7 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
  * Unit tests for {@link FindCreditsByIdUseCaseImpl}.
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("FindCreditsByIdUseCaseImpl credit lookup")
+@DisplayName("Should cover credit lookup by id")
 class FindCreditsByIdUseCaseImplTest {
 
   @Mock
@@ -33,7 +33,7 @@ class FindCreditsByIdUseCaseImplTest {
   }
 
   @Test
-  @DisplayName("Returns the credit when it exists")
+  @DisplayName("Should return the credit when it exists")
   void returnsCreditWhenItExists() {
     // Arrange
     Credit credit = Credit.builder().id("credit-1").build();
@@ -50,7 +50,7 @@ class FindCreditsByIdUseCaseImplTest {
   }
 
   @Test
-  @DisplayName("Fails when the credit does not exist")
+  @DisplayName("Should fail when the credit does not exist")
   void failsWhenCreditDoesNotExist() {
     // Arrange
     when(creditRepository.findById("credit-404")).thenReturn(Maybe.empty());
@@ -65,7 +65,7 @@ class FindCreditsByIdUseCaseImplTest {
   }
 
   @Test
-  @DisplayName("Propagates repository errors")
+  @DisplayName("Should propagate repository errors")
   void propagatesRepositoryError() {
     // Arrange
     when(creditRepository.findById("credit-1"))

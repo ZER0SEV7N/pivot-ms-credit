@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.pe.pivot</groupId>
 	<artifactId>ms-credit</artifactId>
-	<version>1.0.0</version>
+	<version>1.1.0</version>
 	<name>MS Credit</name>
 	<description>Active Bank Products Microservice for Pivot Banking System</description>
 	<url>https://github.com/ZER0SEV7N/pivot-ms-credit</url>
@@ -94,12 +94,6 @@
 			<artifactId>reactor-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-        <dependency>
-            <groupId>com.pe.pivot.account</groupId>
-            <artifactId>ms-account</artifactId>
-            <version>1.0.0</version>
-            <scope>compile</scope>
-        </dependency>
 
 		<!-- Netflix Eureka Discovery Client -->
 		<dependency>
@@ -172,7 +166,7 @@
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.8.12</version>
+				<version>0.8.15</version>
 				<configuration>
 					<excludes>
 						<exclude>**/*Application.class</exclude>
@@ -227,6 +221,7 @@
 				<version>3.6.0</version>
 				<configuration>
 					<configLocation>google_checks.xml</configLocation>
+					<includeTestSourceDirectory>true</includeTestSourceDirectory>
 					<consoleOutput>true</consoleOutput>
 					<failsOnError>false</failsOnError>
 					<violationSeverity>warning</violationSeverity>

@@ -23,7 +23,7 @@ import reactor.core.publisher.Mono;
  * Unit tests for {@link CreditPersistenceAdapter}.
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("CreditPersistenceAdapter reactive persistence")
+@DisplayName("Should persist credits reactively")
 class CreditPersistenceAdapterTest {
 
   @Mock
@@ -46,7 +46,7 @@ class CreditPersistenceAdapterTest {
   }
 
   @Test
-  @DisplayName("Saves the document and maps it back to the domain")
+  @DisplayName("Should save the document and map it back to the domain")
   void savesDocumentAndMapsItBackToDomain() {
     // Arrange
     when(mapper.toDocument(credit)).thenReturn(document);
@@ -64,7 +64,7 @@ class CreditPersistenceAdapterTest {
   }
 
   @Test
-  @DisplayName("Propagates the error when saving fails")
+  @DisplayName("Should propagate the error when saving fails")
   void propagatesErrorWhenSavingFails() {
     // Arrange
     when(mapper.toDocument(credit)).thenReturn(document);
@@ -80,7 +80,7 @@ class CreditPersistenceAdapterTest {
   }
 
   @Test
-  @DisplayName("Returns all credits as a Flowable")
+  @DisplayName("Should return all credits as a Flowable")
   void returnsAllCreditsAsFlowable() {
     // Arrange
     CreditDocument secondDocument = CreditDocument.builder().id("credit-2").build();
@@ -99,7 +99,7 @@ class CreditPersistenceAdapterTest {
   }
 
   @Test
-  @DisplayName("Finds a credit by id")
+  @DisplayName("Should find a credit by id")
   void findsCreditById() {
     // Arrange
     when(repository.findById("credit-1")).thenReturn(Mono.just(document));
@@ -115,7 +115,7 @@ class CreditPersistenceAdapterTest {
   }
 
   @Test
-  @DisplayName("Returns empty when the credit id does not exist")
+  @DisplayName("Should return empty when the credit id does not exist")
   void returnsEmptyWhenCreditIdDoesNotExist() {
     // Arrange
     when(repository.findById("credit-404")).thenReturn(Mono.empty());
@@ -130,7 +130,7 @@ class CreditPersistenceAdapterTest {
   }
 
   @Test
-  @DisplayName("Finds a credit by its credit number hash")
+  @DisplayName("Should find a credit by its credit number hash")
   void findsCreditByCreditNumberHash() {
     // Arrange
     when(repository.findByCreditNumberHash("hashed"))
@@ -147,7 +147,7 @@ class CreditPersistenceAdapterTest {
   }
 
   @Test
-  @DisplayName("Finds the credits of a customer")
+  @DisplayName("Should find the credits of a customer")
   void findsCreditsByCustomerId() {
     // Arrange
     when(repository.findByCustomerId("cust-1")).thenReturn(Flux.just(document));
@@ -163,7 +163,7 @@ class CreditPersistenceAdapterTest {
   }
 
   @Test
-  @DisplayName("Reports existence by credit number hash")
+  @DisplayName("Should report existence by credit number hash")
   void reportsExistenceByCreditNumberHash() {
     // Arrange
     when(repository.existsByCreditNumberHash("hashed")).thenReturn(Mono.just(true));
@@ -178,7 +178,7 @@ class CreditPersistenceAdapterTest {
   }
 
   @Test
-  @DisplayName("Deletes a credit by id")
+  @DisplayName("Should delete a credit by id")
   void deletesCreditById() {
     // Arrange
     when(repository.deleteById("credit-1")).thenReturn(Mono.empty());
@@ -193,7 +193,7 @@ class CreditPersistenceAdapterTest {
   }
 
   @Test
-  @DisplayName("Maps the saved document back to the domain")
+  @DisplayName("Should map the saved document back to the domain")
   void mapsSavedDocumentBackToDomain() {
     // Arrange
     Credit saved = Credit.builder().id("credit-9").build();

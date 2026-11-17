@@ -23,7 +23,7 @@ import org.springframework.web.server.ServerWebExchange;
 /**
  * Unit tests for {@link GlobalExceptionHandler}.
  */
-@DisplayName("GlobalExceptionHandler error responses")
+@DisplayName("Should map credit exceptions to error responses")
 class GlobalExceptionHandlerTest {
 
   private GlobalExceptionHandler handler;
@@ -38,7 +38,7 @@ class GlobalExceptionHandlerTest {
   }
 
   @Test
-  @DisplayName("Handles credit not found with a 404 status")
+  @DisplayName("Should handle credit not found with a 404 status")
   void handlesCreditNotFoundWithNotFoundStatus() {
     // Arrange
     CreditNotFoundException exception = new CreditNotFoundException("Credit not found");
@@ -59,7 +59,7 @@ class GlobalExceptionHandlerTest {
   }
 
   @Test
-  @DisplayName("Handles customer not found with a 404 status")
+  @DisplayName("Should handle customer not found with a 404 status")
   void handlesCustomerNotFoundWithNotFoundStatus() {
     // Arrange
     CustomerNotFoundException exception = new CustomerNotFoundException("Customer not found");
@@ -76,7 +76,7 @@ class GlobalExceptionHandlerTest {
   }
 
   @Test
-  @DisplayName("Handles a duplicate credit with a 409 status")
+  @DisplayName("Should handle a duplicate credit with a 409 status")
   void handlesDuplicateCreditWithConflictStatus() {
     // Arrange
     DuplicateCreditException exception =
@@ -95,7 +95,7 @@ class GlobalExceptionHandlerTest {
   }
 
   @Test
-  @DisplayName("Handles a business rule violation with a 400 status")
+  @DisplayName("Should handle a business rule violation with a 400 status")
   void handlesBusinessRuleViolationWithBadRequestStatus() {
     // Arrange
     BusinessRuleException exception = new BusinessRuleException("Insufficient available limit");
@@ -112,7 +112,7 @@ class GlobalExceptionHandlerTest {
   }
 
   @Test
-  @DisplayName("Handles validation errors joining their messages")
+  @DisplayName("Should handle validation errors joining their messages")
   void handlesValidationErrorsJoiningMessages() {
     // Arrange
     BeanPropertyBindingResult bindingResult =
@@ -135,7 +135,7 @@ class GlobalExceptionHandlerTest {
   }
 
   @Test
-  @DisplayName("Handles an unexpected exception with a 500 status")
+  @DisplayName("Should handle an unexpected exception with a 500 status")
   void handlesUnexpectedExceptionWithInternalServerErrorStatus() {
     // Arrange
     Exception exception = new IllegalStateException("Unexpected failure");
