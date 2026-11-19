@@ -3,7 +3,6 @@ package com.pe.pivot.credit.application.usecases;
 import com.pe.pivot.credit.domain.exception.BusinessRuleException;
 import com.pe.pivot.credit.domain.model.Credit;
 import com.pe.pivot.credit.domain.model.CreditOperationType;
-import com.pe.pivot.credit.domain.model.CreditStatus;
 import com.pe.pivot.credit.domain.port.in.FindCreditByIdUseCase;
 import com.pe.pivot.credit.domain.port.in.UpdateCreditBalanceUseCase;
 import com.pe.pivot.credit.domain.port.out.CreditRepositoryPort;
@@ -31,10 +30,10 @@ public class CreditBalanceUseCaseImpl implements UpdateCreditBalanceUseCase {
   /**
    * Updates the balance of a credit product based on the specified operation type and amount.
    *
-   * @param id - The unique identifier of the credit product to update.
-   * @param operationType - The type of operation to perform (e.g., CONSUMPTION, PAYMENT).
-   * @param amount - The amount to apply for the operation.
-   * @return - A Single emitting the updated Credit product or an error if the operation fails.
+   * @param id the unique identifier of the credit product to update
+   * @param operationType the type of operation to perform (e.g., CONSUMPTION, PAYMENT)
+   * @param amount the amount to apply for the operation
+   * @return a Single emitting the updated Credit product or an error if the operation fails
    */
   @Override
   public Single<Credit> updateBalance(
@@ -42,7 +41,7 @@ public class CreditBalanceUseCaseImpl implements UpdateCreditBalanceUseCase {
     log.debug("Processing credit balance operation for creditId: {}, operation: {}, amount: {}",
             id, operationType, amount);
 
-    // Validate the credit product exists and is in a valid state for the operation
+    // Validate that the operation type is supported by one of the registered strategies
     return findCreditByIdUseCase.findById(id)
             .flatMap(credit -> validatePreconditions(credit, amount))
             .flatMap(credit -> resolveStrategy(operationType).applyOperation(credit, amount))
@@ -54,23 +53,16 @@ public class CreditBalanceUseCaseImpl implements UpdateCreditBalanceUseCase {
   }
 
   /**
-   * Validates the preconditions for performing a credit balance operation.
+   * Validates common preconditions before delegating status and balance rules to each strategy.
    *
-   * @param credit - The credit product to validate.
-   * @param amount - The amount to be used in the operation.
-   * @return - A Single emitting the credit product if valid, or an error if any precondition
-   *     fails.
+   * @param credit the credit product to validate
+   * @param amount the amount to be used in the operation
+   * @return a Single emitting the credit product if valid, or an error if any precondition fails
    */
   private Single<Credit> validatePreconditions(Credit credit, BigDecimal amount) {
-    // Validate that the credit product is ACTIVE and the amount is positive
-    if (credit.getStatus() != CreditStatus.ACTIVE) {
-      return Single.error(new BusinessRuleException(
-              "Credit product is not ACTIVE. Current status: " + credit.getStatus()));
-    }
-
-    // Validate that the amount is positive
     if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
-      return Single.error(new BusinessRuleException("Operation amount must be greater than zero."));
+      return Single.error(
+              new BusinessRuleException("Operation amount must be greater than zero."));
     }
     return Single.just(credit);
   }
@@ -78,8 +70,8 @@ public class CreditBalanceUseCaseImpl implements UpdateCreditBalanceUseCase {
   /**
    * Resolves the appropriate strategy for the given credit operation type.
    *
-   * @param operationType - The type of credit operation to perform (e.g., CONSUMPTION, PAYMENT).
-   * @return - The corresponding CreditOperationStrategy for the specified operation type.
+   * @param operationType the type of credit operation to perform
+   * @return the corresponding CreditOperationStrategy
    */
   private CreditOperationStrategy resolveStrategy(CreditOperationType operationType) {
     return operationStrategies.stream()

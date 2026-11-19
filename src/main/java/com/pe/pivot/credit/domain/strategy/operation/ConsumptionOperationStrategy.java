@@ -3,6 +3,7 @@ package com.pe.pivot.credit.domain.strategy.operation;
 import com.pe.pivot.credit.domain.exception.BusinessRuleException;
 import com.pe.pivot.credit.domain.model.Credit;
 import com.pe.pivot.credit.domain.model.CreditOperationType;
+import com.pe.pivot.credit.domain.model.CreditStatus;
 import io.reactivex.rxjava3.core.Single;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -35,13 +36,18 @@ public class ConsumptionOperationStrategy implements CreditOperationStrategy {
    */
   @Override
   public Single<Credit> applyOperation(Credit credit, BigDecimal amount) {
-    // Validate that the credit type is a credit card
     if (!credit.getCreditType().isCreditCard()) {
       return Single.error(new BusinessRuleException(
               "CONSUMPTION operations are only allowed on Credit Card products."));
     }
 
-    // Validate that the credit is active
+    // Validate that the credit is in a state that allows consumptions (ACTIVE).
+    if (credit.getStatus() != CreditStatus.ACTIVE) {
+      return Single.error(new BusinessRuleException(
+              "Credit card cannot process consumptions in current status: " + credit.getStatus()));
+    }
+
+    // Validate that the available amount is sufficient for the consumption operation.
     BigDecimal currentAvailable =
             Optional.ofNullable(credit.getAvailableAmount()).orElse(BigDecimal.ZERO);
     if (currentAvailable.compareTo(amount) < 0) {
@@ -50,13 +56,12 @@ public class ConsumptionOperationStrategy implements CreditOperationStrategy {
                       + currentAvailable));
     }
 
-    // Update the credit's used and available amounts
+    // Update the used and available amounts of the credit based on the consumption operation.
     BigDecimal currentUsed = Optional.ofNullable(credit.getUsedAmount()).orElse(BigDecimal.ZERO);
     credit.setUsedAmount(currentUsed.add(amount));
     credit.setAvailableAmount(currentAvailable.subtract(amount));
     credit.setUpdatedAt(Instant.now());
 
-    // Return the updated credit object wrapped in a Single
     return Single.just(credit);
   }
 }

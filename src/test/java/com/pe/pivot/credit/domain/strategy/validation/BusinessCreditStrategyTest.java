@@ -109,6 +109,7 @@ class BusinessCreditStrategyTest {
     observer.assertError(BusinessRuleException.class);
   }
 
+
   private CustomerSummary businessCustomer() {
     return CustomerSummary.builder()
             .id("cust-b")
