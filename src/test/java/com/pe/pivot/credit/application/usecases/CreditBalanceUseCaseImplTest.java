@@ -29,8 +29,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
  * Unit tests for {@link CreditBalanceUseCaseImpl}.
  */
 @ExtendWith(MockitoExtension.class)
-@DisplayName("Should cover credit balance updates")
+@DisplayName("Should be able to update credit balances")
 class CreditBalanceUseCaseImplTest {
+
+  private static final String CREDIT_ID = "credit-1";
 
   @Mock
   private CreditRepositoryPort creditRepository;
@@ -50,7 +52,7 @@ class CreditBalanceUseCaseImplTest {
     useCase = new CreditBalanceUseCaseImpl(creditRepository, findCreditByIdUseCase,
             List.of(operationStrategy));
     credit = Credit.builder()
-            .id("credit-1")
+            .id(CREDIT_ID)
             .status(CreditStatus.ACTIVE)
             .usedAmount(new BigDecimal("100.00"))
             .availableAmount(new BigDecimal("400.00"))
@@ -58,16 +60,17 @@ class CreditBalanceUseCaseImplTest {
   }
 
   @Test
-  @DisplayName("Should apply the operation and persist the updated credit")
-  void appliesOperationAndPersistsUpdatedCredit() {
+  @DisplayName("Should be applied and persisted when the strategy supports the operation")
+  void shouldBeAppliedAndPersistedWhenStrategySupportsTheOperation() {
+    // (happy path)
     // Arrange
     Credit updatedCredit = Credit.builder()
-            .id("credit-1")
+            .id(CREDIT_ID)
             .status(CreditStatus.ACTIVE)
             .usedAmount(new BigDecimal("150.00"))
             .availableAmount(new BigDecimal("350.00"))
             .build();
-    when(findCreditByIdUseCase.findById("credit-1")).thenReturn(Single.just(credit));
+    when(findCreditByIdUseCase.findById(CREDIT_ID)).thenReturn(Single.just(credit));
     when(operationStrategy.supports(CreditOperationType.PAYMENT)).thenReturn(true);
     when(operationStrategy.applyOperation(credit, new BigDecimal("50.00")))
             .thenReturn(Single.just(updatedCredit));
@@ -75,76 +78,66 @@ class CreditBalanceUseCaseImplTest {
 
     // Act
     TestObserver<Credit> observer =
-            useCase.updateBalance("credit-1", CreditOperationType.PAYMENT, new BigDecimal("50.00"))
+            useCase.updateBalance(CREDIT_ID, CreditOperationType.PAYMENT, new BigDecimal("50.00"))
                     .test();
 
     // Assert
     observer.assertNoErrors();
-    observer.assertValue(updatedCredit);
     observer.assertComplete();
+    observer.assertValueCount(1);
+    observer.assertValue(updatedCredit);
+    verify(operationStrategy).applyOperation(credit, new BigDecimal("50.00"));
     verify(creditRepository).save(updatedCredit);
   }
 
   @Test
-  @DisplayName("Should reject the operation when the credit is not active")
-  void rejectsOperationWhenCreditIsNotActive() {
+  @DisplayName("Should be rejected when the amount is null")
+  void shouldBeRejectedWhenAmountIsNull() {
+    // (error: null amount)
     // Arrange
-    credit.setStatus(CreditStatus.CLOSED);
-    when(findCreditByIdUseCase.findById("credit-1")).thenReturn(Single.just(credit));
+    when(findCreditByIdUseCase.findById(CREDIT_ID)).thenReturn(Single.just(credit));
 
     // Act
     TestObserver<Credit> observer =
-            useCase.updateBalance("credit-1", CreditOperationType.PAYMENT, BigDecimal.TEN).test();
+            useCase.updateBalance(CREDIT_ID, CreditOperationType.CONSUMPTION, null).test();
+
+    // Assert
+    observer.assertNoValues();
+    observer.assertError(BusinessRuleException.class);
+    observer.assertError(error -> error.getMessage().contains("greater than zero"));
+    verifyNoInteractions(operationStrategy);
+    verify(creditRepository, never()).save(any());
+  }
+
+  @Test
+  @DisplayName("Should be rejected when the amount is zero")
+  void shouldBeRejectedWhenAmountIsZero() {
+    // (error: zero amount)
+    // Arrange
+    when(findCreditByIdUseCase.findById(CREDIT_ID)).thenReturn(Single.just(credit));
+
+    // Act
+    TestObserver<Credit> observer =
+            useCase.updateBalance(CREDIT_ID, CreditOperationType.CONSUMPTION, BigDecimal.ZERO)
+                    .test();
 
     // Assert
     observer.assertNoValues();
     observer.assertError(BusinessRuleException.class);
     verifyNoInteractions(operationStrategy);
-    verifyNoInteractions(creditRepository);
-  }
-
-  @Test
-  @DisplayName("Should reject a null amount")
-  void rejectsNullAmount() {
-    // Arrange
-    when(findCreditByIdUseCase.findById("credit-1")).thenReturn(Single.just(credit));
-
-    // Act
-    TestObserver<Credit> observer =
-            useCase.updateBalance("credit-1", CreditOperationType.CONSUMPTION, null).test();
-
-    // Assert
-    observer.assertNoValues();
-    observer.assertError(BusinessRuleException.class);
     verify(creditRepository, never()).save(any());
   }
 
   @Test
-  @DisplayName("Should reject a zero amount")
-  void rejectsZeroAmount() {
+  @DisplayName("Should be rejected when the amount is negative")
+  void shouldBeRejectedWhenAmountIsNegative() {
+    // (error: negative amount)
     // Arrange
-    when(findCreditByIdUseCase.findById("credit-1")).thenReturn(Single.just(credit));
+    when(findCreditByIdUseCase.findById(CREDIT_ID)).thenReturn(Single.just(credit));
 
     // Act
     TestObserver<Credit> observer =
-            useCase.updateBalance("credit-1", CreditOperationType.CONSUMPTION, BigDecimal.ZERO)
-                    .test();
-
-    // Assert
-    observer.assertNoValues();
-    observer.assertError(BusinessRuleException.class);
-    verify(creditRepository, never()).save(any());
-  }
-
-  @Test
-  @DisplayName("Should reject a negative amount")
-  void rejectsNegativeAmount() {
-    // Arrange
-    when(findCreditByIdUseCase.findById("credit-1")).thenReturn(Single.just(credit));
-
-    // Act
-    TestObserver<Credit> observer =
-            useCase.updateBalance("credit-1", CreditOperationType.CONSUMPTION,
+            useCase.updateBalance(CREDIT_ID, CreditOperationType.CONSUMPTION,
                     new BigDecimal("-10.00")).test();
 
     // Assert
@@ -154,16 +147,57 @@ class CreditBalanceUseCaseImplTest {
   }
 
   @Test
-  @DisplayName("Should reject an unsupported operation type")
-  void rejectsUnsupportedOperationType() {
+  @DisplayName("Should be rejected when no strategy supports the operation type")
+  void shouldBeRejectedWhenNoStrategySupportsTheOperationType() {
+    // (error: unsupported operation type)
     // Arrange
-    when(findCreditByIdUseCase.findById("credit-1")).thenReturn(Single.just(credit));
+    when(findCreditByIdUseCase.findById(CREDIT_ID)).thenReturn(Single.just(credit));
     when(operationStrategy.supports(CreditOperationType.CONSUMPTION)).thenReturn(false);
 
     // Act
     TestObserver<Credit> observer =
-            useCase.updateBalance("credit-1", CreditOperationType.CONSUMPTION, BigDecimal.TEN)
+            useCase.updateBalance(CREDIT_ID, CreditOperationType.CONSUMPTION, BigDecimal.TEN)
                     .test();
+
+    // Assert
+    observer.assertNoValues();
+    observer.assertError(BusinessRuleException.class);
+    observer.assertError(error -> error.getMessage().contains("Unsupported credit operation"));
+    verify(creditRepository, never()).save(any());
+  }
+
+  @Test
+  @DisplayName("Should be propagated when the credit does not exist")
+  void shouldBePropagatedWhenCreditDoesNotExist() {
+    // (error: credit not found)
+    // Arrange
+    when(findCreditByIdUseCase.findById(CREDIT_ID)).thenReturn(
+            Single.error(new CreditNotFoundException("Credit not found")));
+
+    // Act
+    TestObserver<Credit> observer =
+            useCase.updateBalance(CREDIT_ID, CreditOperationType.PAYMENT, BigDecimal.TEN).test();
+
+    // Assert
+    observer.assertNoValues();
+    observer.assertError(CreditNotFoundException.class);
+    verifyNoInteractions(operationStrategy);
+    verify(creditRepository, never()).save(any());
+  }
+
+  @Test
+  @DisplayName("Should be propagated when the strategy rejects the operation")
+  void shouldBePropagatedWhenStrategyRejectsTheOperation() {
+    // (error: business rule rejected by strategy, e.g. non-active credit)
+    // Arrange
+    when(findCreditByIdUseCase.findById(CREDIT_ID)).thenReturn(Single.just(credit));
+    when(operationStrategy.supports(CreditOperationType.PAYMENT)).thenReturn(true);
+    when(operationStrategy.applyOperation(credit, BigDecimal.TEN)).thenReturn(
+            Single.error(new BusinessRuleException("Credit product cannot receive payments")));
+
+    // Act
+    TestObserver<Credit> observer =
+            useCase.updateBalance(CREDIT_ID, CreditOperationType.PAYMENT, BigDecimal.TEN).test();
 
     // Assert
     observer.assertNoValues();
@@ -172,19 +206,22 @@ class CreditBalanceUseCaseImplTest {
   }
 
   @Test
-  @DisplayName("Should propagate the credit not found error")
-  void propagatesCreditNotFoundError() {
+  @DisplayName("Should be propagated when the repository fails while saving")
+  void shouldBePropagatedWhenRepositoryFailsWhileSaving() {
+    // (error: persistence failure)
     // Arrange
-    when(findCreditByIdUseCase.findById("credit-1")).thenReturn(
-            Single.error(new CreditNotFoundException("Credit not found")));
+    when(findCreditByIdUseCase.findById(CREDIT_ID)).thenReturn(Single.just(credit));
+    when(operationStrategy.supports(CreditOperationType.PAYMENT)).thenReturn(true);
+    when(operationStrategy.applyOperation(credit, BigDecimal.TEN)).thenReturn(Single.just(credit));
+    when(creditRepository.save(credit)).thenReturn(
+            Single.error(new IllegalStateException("database unavailable")));
 
     // Act
     TestObserver<Credit> observer =
-            useCase.updateBalance("credit-1", CreditOperationType.PAYMENT, BigDecimal.TEN).test();
+            useCase.updateBalance(CREDIT_ID, CreditOperationType.PAYMENT, BigDecimal.TEN).test();
 
     // Assert
     observer.assertNoValues();
-    observer.assertError(CreditNotFoundException.class);
-    verify(creditRepository, never()).save(any());
+    observer.assertError(IllegalStateException.class);
   }
 }

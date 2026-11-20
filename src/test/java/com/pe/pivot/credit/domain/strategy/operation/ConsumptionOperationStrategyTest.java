@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Unit tests for {@link ConsumptionOperationStrategy}.
  */
-@DisplayName("Should handle consumption operations")
+@DisplayName("Should be able to process credit card consumptions")
 class ConsumptionOperationStrategyTest {
 
   private ConsumptionOperationStrategy strategy;
@@ -26,52 +26,95 @@ class ConsumptionOperationStrategyTest {
     strategy = new ConsumptionOperationStrategy();
   }
 
-  /**
-   * Verifies that the strategy only claims support for consumption operations.
-   */
   @Test
-  @DisplayName("Should support only consumption operations")
-  void supportsOnlyConsumptionOperations() {
+  @DisplayName("Should be applied successfully when the credit card is active and has enough limit")
+  void shouldBeAppliedSuccessfullyWhenCreditCardIsActiveAndHasEnoughLimit() {
+    // (happy path)
+    // Arrange
+    Credit credit = creditCard(CreditStatus.ACTIVE, "100.00", "400.00");
+
+    // Act
+    TestObserver<Credit> observer = strategy.applyOperation(credit, new BigDecimal("50.00"))
+            .test();
+
+    // Assert
+    observer.assertNoErrors();
+    observer.assertComplete();
+    observer.assertValueCount(1);
+    observer.assertValue(credit);
+    assertThat(credit.getUsedAmount()).isEqualByComparingTo("150.00");
+    assertThat(credit.getAvailableAmount()).isEqualByComparingTo("350.00");
+    assertThat(credit.getUpdatedAt()).isNotNull();
+  }
+
+  @Test
+  @DisplayName("Should be supported only for consumption operations")
+  void shouldBeSupportedOnlyForConsumptionOperations() {
+    // Arrange - no dependencies required
+
     // Act
     boolean consumptionSupported = strategy.supports(CreditOperationType.CONSUMPTION);
     boolean paymentSupported = strategy.supports(CreditOperationType.PAYMENT);
+    boolean nullSupported = strategy.supports(null);
 
     // Assert
     assertThat(consumptionSupported).isTrue();
     assertThat(paymentSupported).isFalse();
+    assertThat(nullSupported).isFalse();
   }
 
   @Test
-  @DisplayName("Should reject consumption on loan products")
-  void rejectsConsumptionOnLoanProducts() {
+  @DisplayName("Should be rejected when the credit is not active")
+  void shouldBeRejectedWhenCreditIsNotActive() {
+    // (error: non-active credit status)
+    // Arrange
+    Credit credit = creditCard(CreditStatus.CLOSED, "100.00", "400.00");
+
+    // Act
+    TestObserver<Credit> observer = strategy.applyOperation(credit, new BigDecimal("50.00"))
+            .test();
+
+    // Assert
+    observer.assertNoValues();
+    observer.assertError(BusinessRuleException.class);
+    observer.assertError(error -> error.getMessage().contains("current status"));
+    assertThat(credit.getUsedAmount()).isEqualByComparingTo("100.00");
+    assertThat(credit.getAvailableAmount()).isEqualByComparingTo("400.00");
+  }
+
+  @Test
+  @DisplayName("Should be rejected when the product is a loan")
+  void shouldBeRejectedWhenProductIsLoan() {
+    // (error: non credit card product)
     // Arrange
     Credit credit = Credit.builder()
             .creditType(CreditType.PERSONAL_LOAN)
+            .status(CreditStatus.ACTIVE)
             .usedAmount(new BigDecimal("100.00"))
             .availableAmount(new BigDecimal("0.00"))
             .build();
 
     // Act
-    TestObserver<Credit> observer = strategy.applyOperation(credit, new BigDecimal("10.00")).test();
+    TestObserver<Credit> observer = strategy.applyOperation(credit, new BigDecimal("10.00"))
+            .test();
 
     // Assert
     observer.assertNoValues();
     observer.assertError(BusinessRuleException.class);
+    observer.assertError(error -> error.getMessage().contains("only allowed on Credit Card"));
     assertThat(credit.getUsedAmount()).isEqualByComparingTo("100.00");
   }
 
   @Test
-  @DisplayName("Should reject consumption when the available limit is insufficient")
-  void rejectsConsumptionWhenAvailableLimitIsInsufficient() {
+  @DisplayName("Should be rejected when the available limit is insufficient")
+  void shouldBeRejectedWhenAvailableLimitIsInsufficient() {
+    // (error: insufficient available limit)
     // Arrange
-    Credit credit = Credit.builder()
-            .creditType(CreditType.PERSONAL_CREDIT_CARD)
-            .usedAmount(new BigDecimal("450.00"))
-            .availableAmount(new BigDecimal("50.00"))
-            .build();
+    Credit credit = creditCard(CreditStatus.ACTIVE, "450.00", "50.00");
 
     // Act
-    TestObserver<Credit> observer = strategy.applyOperation(credit, new BigDecimal("60.00")).test();
+    TestObserver<Credit> observer = strategy.applyOperation(credit, new BigDecimal("60.00"))
+            .test();
 
     // Assert
     observer.assertNoValues();
@@ -81,66 +124,46 @@ class ConsumptionOperationStrategyTest {
   }
 
   @Test
-  @DisplayName("Should apply consumption updating used and available amounts")
-  void appliesConsumptionUpdatingUsedAndAvailableAmounts() {
+  @DisplayName("Should be calculated treating a null used amount as zero")
+  void shouldBeCalculatedTreatingNullUsedAmountAsZero() {
     // Arrange
-    Credit credit = Credit.builder()
-            .creditType(CreditType.PERSONAL_CREDIT_CARD)
-            .usedAmount(new BigDecimal("100.00"))
-            .availableAmount(new BigDecimal("400.00"))
-            .build();
+    Credit credit = creditCard(CreditStatus.ACTIVE, null, "200.00");
 
     // Act
-    TestObserver<Credit> observer = strategy.applyOperation(credit, new BigDecimal("50.00")).test();
+    TestObserver<Credit> observer = strategy.applyOperation(credit, new BigDecimal("25.00"))
+            .test();
 
     // Assert
     observer.assertNoErrors();
-    observer.assertValue(credit);
     observer.assertComplete();
-    assertThat(credit.getUsedAmount()).isEqualByComparingTo("150.00");
-    assertThat(credit.getAvailableAmount()).isEqualByComparingTo("350.00");
-    assertThat(credit.getUpdatedAt()).isNotNull();
-  }
-
-  @Test
-  @DisplayName("Should treat a null used amount as zero")
-  void treatsNullUsedAmountAsZero() {
-    // Arrange
-    Credit credit = Credit.builder()
-            .creditType(CreditType.BUSINESS_CREDIT_CARD)
-            .usedAmount(null)
-            .availableAmount(new BigDecimal("200.00"))
-            .build();
-
-    // Act
-    TestObserver<Credit> observer = strategy.applyOperation(credit, new BigDecimal("25.00")).test();
-
-    // Assert
-    observer.assertNoErrors();
     observer.assertValue(credit);
-    observer.assertComplete();
     assertThat(credit.getUsedAmount()).isEqualByComparingTo("25.00");
     assertThat(credit.getAvailableAmount()).isEqualByComparingTo("175.00");
   }
 
   @Test
-  @DisplayName("Should treat a null available amount as zero")
-  void treatsNullAvailableAmountAsZero() {
+  @DisplayName("Should be calculated treating a null available amount as zero")
+  void shouldBeCalculatedTreatingNullAvailableAmountAsZero() {
     // Arrange
-    Credit credit = Credit.builder()
-            .creditType(CreditType.PERSONAL_CREDIT_CARD)
-            .usedAmount(new BigDecimal("10.00"))
-            .availableAmount(null)
-            .build();
+    Credit credit = creditCard(CreditStatus.ACTIVE, "10.00", null);
 
     // Act
     TestObserver<Credit> observer = strategy.applyOperation(credit, BigDecimal.ZERO).test();
 
     // Assert
     observer.assertNoErrors();
-    observer.assertValue(credit);
     observer.assertComplete();
+    observer.assertValueCount(1);
     assertThat(credit.getUsedAmount()).isEqualByComparingTo("10.00");
-    assertThat(credit.getAvailableAmount()).isEqualByComparingTo("0");
+    assertThat(credit.getAvailableAmount()).isEqualByComparingTo("0.00");
+  }
+
+  private Credit creditCard(CreditStatus status, String usedAmount, String availableAmount) {
+    return Credit.builder()
+            .creditType(CreditType.PERSONAL_CREDIT_CARD)
+            .status(status)
+            .usedAmount(usedAmount == null ? null : new BigDecimal(usedAmount))
+            .availableAmount(availableAmount == null ? null : new BigDecimal(availableAmount))
+            .build();
   }
 }

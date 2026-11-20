@@ -42,15 +42,15 @@ public class BusinessCreditStrategy implements CreditValidationStrategy {
       // if they have any overdue credit debts.
       if (existingCredits.stream().anyMatch(Credit::hasOverdueDebt)) {
         throw new BusinessRuleException(
-                "Business customer cannot acquire a new credit product while holding " +
-                        "an overdue credit debt.");
+                "Business customer cannot acquire a new credit product while holding "
+                        + "an overdue credit debt.");
       }
 
       // Business customers cannot request PERSONAL_LOAN or PERSONAL_CREDIT_CARD products.
       if (newCredit.getCreditType().isPersonalProduct()) {
         throw new BusinessRuleException(
-                "Business customers cannot request PERSONAL_LOAN or " +
-                        "PERSONAL_CREDIT_CARD products.");
+                "Business customers cannot request PERSONAL_LOAN or "
+                        + "PERSONAL_CREDIT_CARD products.");
       }
     });
   }

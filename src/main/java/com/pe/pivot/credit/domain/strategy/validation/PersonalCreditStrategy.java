@@ -44,24 +44,24 @@ public class PersonalCreditStrategy implements CreditValidationStrategy {
       // if they have any overdue credit debts.
       if (existingCredits.stream().anyMatch(Credit::hasOverdueDebt)) {
         throw new BusinessRuleException(
-                "Customer cannot acquire a new credit product while holding an " +
-                        "overdue credit debt.");
+                "Customer cannot acquire a new credit product while holding an "
+                        + "overdue credit debt.");
       }
 
       // Business Rule: Personal customers cannot request
       // BUSINESS_LOAN or BUSINESS_CREDIT_CARD products.
       if (newCredit.getCreditType().isBusinessProduct()) {
         throw new BusinessRuleException(
-                "Personal customers cannot request BUSINESS_LOAN or " +
-                        "BUSINESS_CREDIT_CARD products.");
+                "Personal customers cannot request BUSINESS_LOAN or "
+                        + "BUSINESS_CREDIT_CARD products.");
       }
 
       // Business Rule: Personal customers can only hold one active PERSONAL_LOAN at a time.
       if (newCredit.getCreditType() == CreditType.PERSONAL_LOAN
               && existingCredits.stream().anyMatch(Credit::isActivePersonalLoan)) {
         throw new BusinessRuleException(
-                "Personal customers are only allowed to hold one active PERSONAL_LOAN " +
-                        "at a time.");
+                "Personal customers are only allowed to hold one active PERSONAL_LOAN "
+                        + "at a time.");
       }
     });
   }
