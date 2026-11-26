@@ -1,6 +1,7 @@
 package com.pe.pivot.credit.domain.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,6 +18,7 @@ class CreditStatusTest {
     // Arrange
     CreditStatus[] expected = {
         CreditStatus.ACTIVE,
+        CreditStatus.OVERDUE,
         CreditStatus.PAID_OFF,
         CreditStatus.BLOCKED,
         CreditStatus.CLOSED
@@ -27,6 +29,7 @@ class CreditStatusTest {
 
     // Assert
     assertThat(actual).containsExactly(expected);
+    assertEquals(5, CreditStatus.values().length);
   }
 
   @Test

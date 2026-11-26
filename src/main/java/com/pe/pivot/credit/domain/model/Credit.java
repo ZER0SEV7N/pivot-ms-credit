@@ -46,13 +46,23 @@ public class Credit {
   }
 
   /**
-   * Determines whether this credit product is a personal loan that is still active.
+   * Checks whether this credit product currently represents an unpaid overdue debt.
    *
-   * @return true if the credit is a personal loan that is not closed or paid off
+   * @return true if status is OVERDUE and usedAmount is greater than zero
+   */
+  public boolean hasOverdueDebt() {
+    return this.status == CreditStatus.OVERDUE
+            && this.usedAmount != null
+            && this.usedAmount.compareTo(BigDecimal.ZERO) > 0;
+  }
+
+  /**
+   * Checks if this credit is an active or overdue personal loan.
+   *
+   * @return true if PERSONAL_LOAN and status is ACTIVE or OVERDUE
    */
   public boolean isActivePersonalLoan() {
     return this.creditType == CreditType.PERSONAL_LOAN
-            && this.status != CreditStatus.CLOSED
-            && this.status != CreditStatus.PAID_OFF;
+            && (this.status == CreditStatus.ACTIVE || this.status == CreditStatus.OVERDUE);
   }
 }

@@ -11,6 +11,9 @@ import java.util.List;
  */
 public class BusinessCreditStrategy implements CreditValidationStrategy {
 
+  // Constants
+  private static final String BUSINESS_TYPE = "BUSINESS";
+
   /**
    * Checks if the strategy supports the given customer type.
    *
@@ -19,7 +22,7 @@ public class BusinessCreditStrategy implements CreditValidationStrategy {
    */
   @Override
   public boolean supports(String customerType) {
-    return "BUSINESS".equalsIgnoreCase(customerType);
+    return BUSINESS_TYPE.equalsIgnoreCase(customerType);
   }
 
   /**
@@ -35,11 +38,19 @@ public class BusinessCreditStrategy implements CreditValidationStrategy {
   public Completable validate(
           CustomerSummary customer, Credit newCredit, List<Credit> existingCredits) {
     return Completable.fromAction(() -> {
+      // Business Rule: Business customers cannot acquire new credit products
+      // if they have any overdue credit debts.
+      if (existingCredits.stream().anyMatch(Credit::hasOverdueDebt)) {
+        throw new BusinessRuleException(
+                "Business customer cannot acquire a new credit product while holding "
+                        + "an overdue credit debt.");
+      }
+
       // Business customers cannot request PERSONAL_LOAN or PERSONAL_CREDIT_CARD products.
       if (newCredit.getCreditType().isPersonalProduct()) {
         throw new BusinessRuleException(
-                "Business customers cannot request PERSONAL_LOAN or PERSONAL_CREDIT_CARD "
-                        + "products.");
+                "Business customers cannot request PERSONAL_LOAN or "
+                        + "PERSONAL_CREDIT_CARD products.");
       }
     });
   }

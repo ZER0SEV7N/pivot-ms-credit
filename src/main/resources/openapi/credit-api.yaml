@@ -293,13 +293,13 @@ components:
 
     CreditStatus:
       type: string
-      description: Lifecycle status of the credit product (CLOSED represents terminal Soft Delete)
+      description: Lifecycle status of the credit product (OVERDUE blocks acquiring new bank products)
       enum:
         - ACTIVE
+        - OVERDUE
         - PAID_OFF
         - BLOCKED
         - CLOSED
-      default: ACTIVE
 
     CreditOperationType:
       type: string
