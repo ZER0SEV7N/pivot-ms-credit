@@ -1,8 +1,8 @@
 {
   "info": {
     "_postman_id": "c3d4e5f6-a7b8-4c5d-9e0f-1a2b3c4d5e6f",
-    "name": "Pivot Banking - ms-credit",
-    "description": "Complete Postman Collection covering all 9 OpenAPI endpoints for pivot-ms-credit (POST, GET All, GET by ID, GET by Number, GET by Customer, PUT Update/Block/Unblock, GET Balance, PATCH Payment/Consumption & DELETE Soft Delete).",
+    "name": "Pivot Banking - ms-credit (Phase III)",
+    "description": "Postman Collection for pivot-ms-credit (Phase III): loans and credit cards, blind-index lookup, block/unblock, consumption/payment, overdue handling, PAID_OFF transition and soft delete. Prerequisite: run ms-customer first and set personalCustomerId / businessCustomerId.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -502,6 +502,275 @@
           ]
         }
       }
+    },
+    {
+      "name": "20. Consult Business Loan Debt (GET /credits/{id}/balance)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{urlMsCredit}}/credits/{{businessLoanId}}/balance",
+          "host": [
+            "{{urlMsCredit}}"
+          ],
+          "path": [
+            "credits",
+            "{{businessLoanId}}",
+            "balance"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"A loan is disbursed with usedAmount = creditLimit\", function () {",
+              "    pm.expect(pm.response.json().usedAmount).to.eql(50000);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "21. Mark Business Loan as OVERDUE (PUT /credits/{id} - status OVERDUE)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{urlMsCredit}}/credits/{{businessLoanId}}",
+          "host": [
+            "{{urlMsCredit}}"
+          ],
+          "path": [
+            "credits",
+            "{{businessLoanId}}"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"customerId\": \"{{businessCustomerId}}\",\n  \"creditType\": \"BUSINESS_LOAN\",\n  \"currency\": \"PEN\",\n  \"creditLimit\": 50000,\n  \"paymentDueDay\": 28,\n  \"status\": \"OVERDUE\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"Loan is OVERDUE\", function () { pm.expect(pm.response.json().status).to.eql(\"OVERDUE\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "22. Pay Overdue Business Loan (PATCH /credits/{id}/balance - status back to ACTIVE)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{urlMsCredit}}/credits/{{businessLoanId}}/balance",
+          "host": [
+            "{{urlMsCredit}}"
+          ],
+          "path": [
+            "credits",
+            "{{businessLoanId}}",
+            "balance"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"operationType\": \"PAYMENT\",\n  \"amount\": 200\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200 OK\", function () { pm.response.to.have.status(200); });",
+              "pm.test(\"Overdue loan returns to ACTIVE after a partial payment\", function () { pm.expect(pm.response.json().status).to.eql(\"ACTIVE\"); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "23. [Error 400] Payment Greater than Business Loan Debt",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{urlMsCredit}}/credits/{{businessLoanId}}/balance",
+          "host": [
+            "{{urlMsCredit}}"
+          ],
+          "path": [
+            "credits",
+            "{{businessLoanId}}",
+            "balance"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"operationType\": \"PAYMENT\",\n  \"amount\": 99999\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 400 Bad Request\", function () { pm.response.to.have.status(400); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "24. [Error 400] Soft Delete Business Loan with Outstanding Debt",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{urlMsCredit}}/credits/{{businessLoanId}}",
+          "host": [
+            "{{urlMsCredit}}"
+          ],
+          "path": [
+            "credits",
+            "{{businessLoanId}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 400 Bad Request\", function () { pm.response.to.have.status(400); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "25. Issue Business Credit Card (POST /credits - 201 Created)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{urlMsCredit}}/credits",
+          "host": [
+            "{{urlMsCredit}}"
+          ],
+          "path": [
+            "credits"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"customerId\": \"{{businessCustomerId}}\",\n  \"creditType\": \"BUSINESS_CREDIT_CARD\",\n  \"currency\": \"PEN\",\n  \"creditLimit\": 12000,\n  \"paymentDueDay\": 25\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 201 Created\", function () { pm.response.to.have.status(201); });",
+              "var jsonData = pm.response.json();",
+              "if (jsonData.id) { pm.collectionVariables.set(\"businessCreditCardId\", jsonData.id); }"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "26. Soft Delete Business Credit Card with Zero Debt (204 No Content)",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{urlMsCredit}}/credits/{{businessCreditCardId}}",
+          "host": [
+            "{{urlMsCredit}}"
+          ],
+          "path": [
+            "credits",
+            "{{businessCreditCardId}}"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 204 No Content\", function () { pm.response.to.have.status(204); });"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "27. [Error 404] Get Unknown Credit Product",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{urlMsCredit}}/credits/64b000000000000000000000",
+          "host": [
+            "{{urlMsCredit}}"
+          ],
+          "path": [
+            "credits",
+            "64b000000000000000000000"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 404 Not Found\", function () { pm.response.to.have.status(404); });"
+            ]
+          }
+        }
+      ]
     }
   ],
   "variable": [
@@ -513,12 +782,14 @@
     {
       "key": "personalCustomerId",
       "value": "PASTE_YOUR_PERSONAL_CUSTOMER_ID_HERE",
-      "type": "string"
+      "type": "string",
+      "description": "ID del cliente personal creado en ms-customer."
     },
     {
       "key": "businessCustomerId",
       "value": "PASTE_YOUR_BUSINESS_CUSTOMER_ID_HERE",
-      "type": "string"
+      "type": "string",
+      "description": "ID del cliente business creado en ms-customer."
     },
     {
       "key": "personalLoanId",
@@ -543,7 +814,14 @@
     {
       "key": "businessLoanId",
       "value": "",
-      "type": "string"
+      "type": "string",
+      "description": "Se completa en el request 4."
+    },
+    {
+      "key": "businessCreditCardId",
+      "value": "",
+      "type": "string",
+      "description": "Se completa en el request 25."
     }
   ]
 }
