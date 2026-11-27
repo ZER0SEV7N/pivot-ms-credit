@@ -28,8 +28,8 @@ public class WebClientConfig {
    *     endpoint.
    */
   @Bean
-  public WebClient customerWebClient() {
-    return WebClient.builder()
+  public WebClient customerWebClient(WebClient.Builder builder) {
+    return builder.clone()
             .baseUrl(customerServiceUrl)
             .build();
   }
