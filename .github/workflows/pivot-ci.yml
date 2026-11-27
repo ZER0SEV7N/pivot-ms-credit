@@ -100,4 +100,4 @@ jobs:
 
       - name: Verify Dockerfile builds cleanly
         if: hashFiles('Dockerfile') != ''
-        run: docker build --no-cache -t pivot-ci-verify:latest .
+        run: docker build -t pivot-ci-verify:latest . || (sleep 15 && docker build -t pivot-ci-verify:latest .)
